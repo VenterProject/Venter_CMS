@@ -139,7 +139,7 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = ('phone_number', 'profile_picture')
 
-    profile_picture = forms.FileField(widget=forms.FileInput())
+    profile_picture = forms.FileField(widget=forms.FileInput(), required=False)
 
 
 class ContactForm(forms.Form):

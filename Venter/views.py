@@ -26,7 +26,7 @@ from Backend.settings import ADMINS, BASE_DIR, MEDIA_ROOT
 from Venter.forms import ContactForm, CSVForm, ExcelForm, ProfileForm, UserForm
 from Venter.models import Category, File, Profile
 
-from .ML_model.Civis.modeldriver import SimilarityMapping
+from Venter import tasks
 from .ML_model.ICMC.model.ClassificationService import ClassificationService
 
 
@@ -316,18 +316,19 @@ def predict_result(request, pk):
         temp1 = filemeta.filename
         temp2 = os.path.splitext(temp1)
         custom_input_file_name = temp2[0]
-        
+
         output_json_file_name = 'results__'+custom_input_file_name+'.json'
         output_xlsx_file_name = 'results__'+custom_input_file_name+'.xlsx'
- 
+
         output_file_path_json = os.path.join(output_directory_path, output_json_file_name)
         output_file_path_xlsx = os.path.join(output_directory_path, output_xlsx_file_name)
 
         dict_data = {}
         domain_list = []
 
-        sm = SimilarityMapping(filemeta.input_file.path)
-        dict_data = sm.driver()
+        prediction_result = tasks.predict_runner.delay(filemeta.input_file.path)
+
+        dict_data = prediction_result.get()
 
         if dict_data:
             filemeta.has_prediction = True
@@ -390,7 +391,7 @@ def predict_result(request, pk):
         cardview_data = dict_data[domain]
         # intIndex = 1
         # index = cardview_data.startIndex.advancedBy(intIndex)
-            
+        
         if 'category' in request.GET:
             category = request.GET.get('category')
             print(type(category))
