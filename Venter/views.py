@@ -39,7 +39,7 @@ def upload_file(request):
     View logic for uploading CSV/Excel file by a logged in user.
 
     For POST request-------
-        1) The POST data, uploaded csv/xlsx file and a request parameter are being sent to CSVForm/ExcelForm as arguments
+        1) The POST data, uploaded csv/xlsx file and a request parameter are being sent to CSVForm/ExcelForm as argument
         2) If form.is_valid() returns true, the user is assigned to the uploaded_by field
         3) file_form is saved and Form instance is initialized again,
            for user to upload another file after successfully uploading the previous file
@@ -60,7 +60,7 @@ def upload_file(request):
                 return render(request, './Venter/upload_file.html', {
                     'file_form': excel_form, 'successful_submit': True})
         return render(request, './Venter/upload_file.html', {
-            'file_form': excel_form})
+            'file_form': excel_form, 'successful_submit': None})
     else:
         file_form = CSVForm(request=request)
         if request.method == 'POST':
@@ -74,7 +74,7 @@ def upload_file(request):
                     'file_form': file_form, 'successful_submit': True})
 
         return render(request, './Venter/upload_file.html', {
-            'file_form': file_form})
+            'file_form': file_form, 'successful_submit': None})
 
 class CategoryListView(LoginRequiredMixin, ListView):
     """
@@ -118,11 +118,11 @@ class UpdateProfileView(LoginRequiredMixin, UpdateView):
                           {'profile_form': profile_form, 'successful_submit': True})
         else:
             return render(request, './Venter/update_profile.html',
-                          {'profile_form': profile_form})
+                          {'profile_form': profile_form, 'successful_submit': False})
 
     def get(self, request, *args, **kwargs):
         profile_form = ProfileForm(instance=request.user.profile)
-        return render(request, './Venter/update_profile.html', {'profile_form': profile_form})
+        return render(request, './Venter/update_profile.html', {'profile_form': profile_form, 'successful_submit': None})
 
 
 class RegisterEmployeeView(LoginRequiredMixin, CreateView):
@@ -165,13 +165,13 @@ class RegisterEmployeeView(LoginRequiredMixin, CreateView):
                               {'user_form': user_form, 'successful_submit': True})
             except ValidationError as e:
                 user_form.add_error('password', e)
-                return render(request, './Venter/registration.html', {'user_form': user_form})
+                return render(request, './Venter/registration.html', {'user_form': user_form, 'successful_submit': False})
         else:
-            return render(request, './Venter/registration.html', {'user_form': user_form})
+            return render(request, './Venter/registration.html', {'user_form': user_form, 'successful_submit': False})
 
     def get(self, request, *args, **kwargs):
         user_form = UserForm()
-        return render(request, './Venter/registration.html', {'user_form': user_form})
+        return render(request, './Venter/registration.html', {'user_form': user_form, 'successful_submit': None})
 
 
 def contact_us(request):
@@ -219,9 +219,9 @@ def contact_us(request):
             contact_form = ContactForm()
             return render(request, './Venter/contact_us.html', {
                 'contact_form': contact_form, 'successful_submit': True})
-    return render(request, './Venter/contact_us.html', {
-        'contact_form': contact_form,
-    })
+        else:
+            return render(request, './Venter/contact_us.html', {'contact_form': contact_form, 'successful_submit': False})
+    return render(request, './Venter/contact_us.html', {'contact_form': contact_form, 'successful_submit': None})
 
 @require_http_methods(["GET"])
 def about_us(request):
@@ -252,7 +252,6 @@ class FileDeleteView(LoginRequiredMixin, DeleteView):
         else:
             rendered = render_to_string('./Venter/401.html')
             return HttpResponse(rendered, status=401)
-
 
 
 class FileListView(LoginRequiredMixin, ListView):
@@ -413,7 +412,7 @@ def predict_result(request, pk):
         cardview_data = dict_data[domain]
         # intIndex = 1
         # index = cardview_data.startIndex.advancedBy(intIndex)
-            
+
         if 'category' in request.GET:
             category = request.GET.get('category')
             print(type(category))

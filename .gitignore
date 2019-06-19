@@ -6,6 +6,7 @@ media/**
 htmlcov/
 stats.txt
 venv/
+env/
 staticfiles/*
 Venter/ML_model/Civis/MAX.bin
 Venter/ML_model/ICMC/dataset/dataset_mcgm_clean/word_vectors_mcgm.pickle

@@ -3,6 +3,7 @@ omit =
     ../*migrations*
     manage.py
     venv\**
+    env\**
     ../*templatetags*
 
 [report]

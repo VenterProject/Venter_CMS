@@ -155,8 +155,8 @@ class ContactForm(forms.Form):
                                                             message='Please enter a valid first name')])
     last_name = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Last Name'}), required=True,
-                                 validators=[RegexValidator(regex=r'^[a-zA-Z\s]*$',
-                                                            message='Please enter a valid last name')])
+                                validators=[RegexValidator(regex=r'^[a-zA-Z\s]*$',
+                                                           message='Please enter a valid last name')])
     company_name = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Company Name'}), required=True)
     email_address = forms.EmailField(widget=forms.TextInput(
