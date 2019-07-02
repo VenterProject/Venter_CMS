@@ -77,7 +77,15 @@
                                 <p>Category List</p>
                             </a>
                         </li>
-
+                        {% elif request.user.profile.organisation_name|stringformat:"s" == "CIVIS" %}
+                            {% if user.is_staff %}
+                                <li class="add-proposal-item">
+                                    <a class="nav-link" href="{% url 'add_proposal' %}">
+                                        <i class="nc-icon nc-single-copy-04"></i>
+                                        <p>Add Proposal</p>
+                                    </a>    
+                                </li>    
+                            {% endif %}
                         {% endif %}
 
                         <li class="wordcloud-item">

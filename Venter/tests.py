@@ -1,4 +1,6 @@
 import os
+import json
+import ast
 
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import Permission, User
@@ -12,6 +14,8 @@ from Venter.forms import ContactForm, CSVForm, ExcelForm, ProfileForm, UserForm
 from Venter.models import Category, File, Header, Organisation, Profile
 from Venter.views import CategoryListView
 from Backend.settings import ADMINS, BASE_DIR, MEDIA_ROOT
+from Backend.settings import MEDIA_ROOT
+from Venter.wordcloud import generate_wordcloud
 
 
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -148,7 +152,7 @@ class UploadFileTestCase(TestCase):
         response = self.client.post(reverse('upload_file'), {"input_file": ''}, enctype='multipart/form-data')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, './Venter/upload_file.html')
-        self.assertFormError(response, "file_form", "input_file", "This field is required.")    
+        self.assertFormError(response, "file_form", "input_file", "This field is required.")
 
     def test_upload_valid_file_icmc(self):
         self.client.login(username='admin.icmc', password="pass@1234")
@@ -232,7 +236,7 @@ class UploadFileTestCase(TestCase):
         response = self.client.post(reverse('upload_file'), invalid_data, enctype='multipart/form-data')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, './Venter/upload_file.html')
-        self.assertFormError(response, "file_form", "input_file", "File size must not exceed 5 MB")  
+        self.assertFormError(response, "file_form", "input_file", "File size must not exceed 5 MB")
 
 
 # @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
@@ -249,7 +253,7 @@ class UploadFileTestCase(TestCase):
 #     def file_not_predicted(self):
 #         response = self.client.get(reverse('dashboard'))
 #         self.assertEqual(response.status_code, 200)
-        
+
 #         file = open(os.path.join(MEDIA_ROOT, 'Test_Files/input/responses_2.xlsx'), 'r', encoding='utf-8')
 #         uploaded_file = SimpleUploadedFile(file.name, file.read())
 #         filemeta = File.objects.get(input_file=uploaded_file)
@@ -421,7 +425,7 @@ class UpdateProfileTestCase(TestCase):
             'phone_number': '1234567890'
         }
         response = self.client.post(reverse('update_profile', args=[user_civis.pk]), data, enctype='multipart/form-data')
-        self.assertEqual(response.status_code, 200) 
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['successful_submit'], False)
         self.assertTemplateUsed(response, './Venter/update_profile.html')
         self.assertFormError(response, "profile_form", "phone_number", "Please enter a valid phone number")
@@ -593,7 +597,7 @@ class PasswordResetTestCase(TestCase):
         response = self.client.get(reverse('password_reset'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'Venter/password_reset_form.html')
-    
+
     def test_post_invalid_email_password_reset(self):
         # Retrieve the blank form
         response = self.client.get(reverse('password_reset'))
@@ -606,3 +610,98 @@ class PasswordResetTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'Venter/password_reset_form.html')
         self.assertFormError(response, "form", "email", "Enter a valid email address.")
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class WordCloudTestCase(TestCase):
+    """
+        Test case for users to view wordcloud for a set of responses per category
+    """
+    fixtures = ["Venter/fixtures/fixture_new_1.json"]
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_icmc_wordcloud(self):
+        self.client.login(username="admin.icmc", password="pass@1234")
+
+        pk = 207
+        file = File.objects.get(pk=pk)
+
+        org_name = Organisation.objects.get(organisation_name="ICMC")
+        category_queryset = Category.objects.filter(organisation_name=org_name)
+        category_list = []
+        for element in category_queryset:
+            cat = element.category
+            category_list.append(cat)
+
+        response = self.client.get(reverse('wordcloud', kwargs={"pk": file.pk}))
+
+        self.assertEqual(response.context['category_list'], category_list)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, './Venter/wordcloud.html')
+
+    def test_civis_wordcloud(self):
+        self.client.login(username="admin.civis", password="pass@1234")
+
+        pk = 212
+        file = File.objects.get(pk=pk)
+
+        domain_name = "Heritage Conservation"
+        wordcloud_category_list = []
+
+        dict_data = json.load(file.output_file_json)
+        print("=====================dict_data in test case: ", type(dict_data) )
+        print(dict_data)
+        domain_data = dict_data[domain_name]
+        print("=====================domain_data in test case: ", type(domain_data))
+        print(domain_data)
+        for category, category_dict in domain_data.items():
+            wordcloud_category_list.append(category)
+        wordcloud_category_list = wordcloud_category_list[:-1]
+
+        print("===============wordcloud category list=====")
+        print(type(wordcloud_category_list))
+        print(wordcloud_category_list)
+
+        data = {
+            "wordcloud_domain_name": domain_name
+        }
+
+        response = self.client.post(reverse('wordcloud', kwargs={"pk": file.pk}), data)
+
+        self.assertEqual(response.context['category_list'], wordcloud_category_list)
+        self.assertEqual(response.context['domain_name'], domain_name)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, './Venter/wordcloud.html')
+
+    def test_civis_wordcloud_content(self):
+        self.client.login(username="admin.civis", password="pass@1234")
+
+        pk = 212
+        file = File.objects.get(pk=pk)
+
+        domain_name = "Heritage Conservation"
+        category_name = "set the boundaries of these heritage zones and said that these areas should be conserved, protected and highlighted by provision of transport facilities and tourist infrastructure"
+        temp_cat_list = json.dumps("{'set the boundaries of these heritage zones and said that these areas should be conserved, protected and highlighted by provision of transport facilities and tourist infrastructure', 'The 12 heritage zones identified are: Central Administrative Heritage Zone, Petta and Bangalore Fort, Gavipuram, Basavanagudi and VV Puram, M.G.Road, Shivajinagar, Cleveland Town, Richards Town, Malleshwaram, Ulsoor, Whitefield Inner Circle, Begur Temple and Bangalore Palace Heritage Zone'}")
+        data = {
+            "category_name": category_name,
+            "domain_name": domain_name,
+            "category_list": temp_cat_list
+        }
+        response = self.client.post(reverse('wordcloud_contents', kwargs={"pk": file.pk}), data)
+        output_dict = generate_wordcloud(file.output_file_json.path)
+        domain_items_list = output_dict[domain_name]
+        words = {}
+
+        for domain_item in domain_items_list:
+            if list(domain_item.keys())[0].split('\n')[0].strip() == category_name.strip():
+                words = list(domain_item.values())[0]
+
+        category_list = json.loads(temp_cat_list)
+        self.assertEqual(response.context['category_list'], category_list)
+        self.assertEqual(response.context['domain_name'], domain_name)
+        self.assertEqual(response.context['words'], words)
+        self.assertEqual(response.context['category_name'], category_name)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, './Venter/wordcloud.html')
+
+

@@ -25,5 +25,5 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/venter/', permanent=True)),
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# if settings.DEBUG is True:
-#     static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG is not True:
+    static(settings.MEDIA_ROOT, document_root=settings.MEDIA_ROOT)

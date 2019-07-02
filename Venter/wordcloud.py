@@ -10,7 +10,7 @@ import inflect
 
 def mapNounFrequency(sentenceList):
     '''
-    This function tags entities for a given list of sentences and returns a 
+    This function tags entities for a given list of sentences and returns a
     frequency map preserving the likeliness of singular and plural occurences
     '''
     fMap = {}
@@ -42,20 +42,20 @@ def mapNounFrequency(sentenceList):
     normalizer = max(frequency)
     for entity,raw in zip(fMap, frequency):
         fMap[entity] = int((raw/normalizer)*100)
-    
     return fMap
 
 
-if __name__ == "__main__":
+def generate_wordcloud(path):
     '''
     main/ driver function
     '''
+    # self.filepath = path
+    # if __name__ == "__main__":
     data = {}
     words = {}
 
-    with open('output.json') as temp:
+    with open(path) as temp:
         data = temp.read()
-
     data = json.loads(data)
 
     for domains in data:
@@ -70,10 +70,5 @@ if __name__ == "__main__":
             for scoredresponse in data[domains][cats]:
                 tempargs.append(scoredresponse['response'].split('-')[-1].strip())
             temp[cats] = mapNounFrequency(tempargs)
-            #print('*************************************************\n\n')
-
-    with open('./words.json', 'w') as temp:
-        json.dump(words, temp)
-
-    print('json output stored')
+    return words
         

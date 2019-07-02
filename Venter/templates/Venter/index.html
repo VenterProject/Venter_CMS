@@ -25,7 +25,12 @@
                         <img src="../../static/assets/img/logo_3.png" alt="logo" class="imagelogo-index">
                 </a>
                 <label class="app-label">Venter</label>
-                <div class="test"> 
+                <div class="test">
+                    <a class="nav-link" href="{% url 'request_demo' %}">
+                        <div class="test">
+                            <button class="demo-button">Request Demo</button>
+                        </div>
+                    </a>  
                     <a class="nav-link" href="{% url 'login' %}">
                         <div class="test">Login</div>
                     </a>    
@@ -47,19 +52,9 @@
                   {% endblock %}
           </div>
           <div class="footer-index">
-            <div class="row">
-                <div class="col-lg-10">
-                    <p>© 2018 Venter . All Rights Reserved | Design by
-                        <a href="http://www.iitb.ac.in/" target="_blank">IIT Bombay, Powai</a>
-                    </p>
-                </div>
-                <div class="col-lg-2">
-                    <a href="https://www.youtube.com/channel/UCxgI-77d1nesaN9mPk8r4yg">
-                        <i class="fa fa-youtube" aria-hidden="true"></i>
-                    </a>    
-                    <i class="fa fa-facebook-f" aria-hidden="true"></i>
-                </div>    
-            </div>
+            <p>© 2019 Venter . All Rights Reserved | Design by
+                <a href="http://www.iitb.ac.in/" target="_blank">IIT Bombay, Powai</a>
+            </p>
           </div>
             <script>
                 function myFunction() {

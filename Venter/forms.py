@@ -60,6 +60,16 @@ class CSVForm(forms.ModelForm):
                 raise forms.ValidationError(
                     "Please upload .csv extension files only")
 
+            # if filename.endswith(settings.FILE_UPLOAD_TYPE):
+            #     if input_file_header_validation(uploaded_input_file, self.request):
+            #         return uploaded_input_file
+            #     else:
+            #         raise forms.ValidationError(
+            #             "Incorrect headers detected, please upload correct file")
+            # else:
+            #     raise forms.ValidationError(
+            #         "Please upload .csv extension files only")
+
         return uploaded_input_file
 
 
@@ -110,7 +120,7 @@ class UserForm(forms.ModelForm):
         model = User
         fields = ('username', 'password', 'email', 'first_name', 'last_name')
     username = forms.CharField(widget=forms.TextInput(
-        attrs={'class': 'form-control', 'placeholder': 'Username'}))
+        attrs={'class': 'form-control', 'placeholder': 'Username', 'autofocus': 'autofocus'}))
     password = forms.CharField(widget=forms.PasswordInput(
         attrs={'class': 'form-control', 'placeholder': 'Password'}))
     email = forms.CharField(widget=forms.EmailInput(
@@ -150,7 +160,7 @@ class ContactForm(forms.Form):
         1) 'contact_us.html' template: Generates the contact form fields in the contact us page for public users
     """
     first_name = forms.CharField(widget=forms.TextInput(
-        attrs={'class': 'form-control', 'placeholder': 'First Name'}), required=True,
+        attrs={'class': 'form-control', 'placeholder': 'First Name', 'autofocus': 'autofocus'}), required=True,
                                  validators=[RegexValidator(regex=r'^[a-zA-Z\s]*$',
                                                             message='Please enter a valid first name')])
     last_name = forms.CharField(widget=forms.TextInput(
@@ -159,11 +169,21 @@ class ContactForm(forms.Form):
                                                            message='Please enter a valid last name')])
     company_name = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Company Name'}), required=True)
+    designation = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Designation'}), required=True)
+    city = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'City'}), required=True,
+                                 validators=[RegexValidator(regex=r'^[a-zA-Z\s]*$',
+                                                            message='Please enter a valid city name')])
     email_address = forms.EmailField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Email'}), required=True, validators=[EmailValidator])
     contact_no = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Contact Number'}), required=True, max_length=10,
                                  validators=[RegexValidator(regex=r'^[6-9]\d{9}$',
                                                             message='Please enter a valid phone number')])
-    requirement_details = forms.CharField(widget=forms.Textarea(
-        attrs={'class': 'form-control', 'placeholder': 'Requirements'}), required=True)
+    detail_1 = forms.CharField(widget=forms.Textarea(
+        attrs={'class': 'form-control'}), required=True)
+    detail_2 = forms.CharField(widget=forms.Textarea(
+        attrs={'class': 'form-control'}), required=True)
+    detail_3 = forms.CharField(widget=forms.Textarea(
+        attrs={'class': 'form-control'}))        

@@ -1,8 +1,9 @@
-import datetime
 import array
+import datetime
 import json
 import os
 import re
+import ast
 from ast import literal_eval
 from collections import defaultdict
 
@@ -14,8 +15,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
@@ -25,10 +27,11 @@ from django.views.generic.list import ListView
 from Backend.settings import ADMINS, BASE_DIR, MEDIA_ROOT
 from Venter.forms import ContactForm, CSVForm, ExcelForm, ProfileForm, UserForm
 from Venter.models import Category, File, Profile
-from .ML_model.ICMC.model.ClassificationService import ClassificationService
+
 # from Venter import tasks
+from Venter.wordcloud import generate_wordcloud
 from .ML_model.Civis.modeldriver import SimilarityMapping
-from django.template.loader import render_to_string
+from .ML_model.ICMC.model.ClassificationService import ClassificationService
 
 
 @login_required
@@ -193,10 +196,13 @@ def contact_us(request):
             first_name = contact_form.cleaned_data.get('first_name')
             last_name = contact_form.cleaned_data.get('last_name')
             company_name = contact_form.cleaned_data.get('company_name')
+            designation = contact_form.cleaned_data.get('designation')
+            city = contact_form.cleaned_data.get('city')
             contact_no = contact_form.cleaned_data.get('contact_no')
             email_address = contact_form.cleaned_data.get('email_address')
-            requirement_details = contact_form.cleaned_data.get(
-                'requirement_details')
+            detail_1 = contact_form.cleaned_data.get('detail_1')
+            detail_2 = contact_form.cleaned_data.get('detail_2')
+            detail_3 = contact_form.cleaned_data.get('detail_3')
 
             # get current date and time
             now = datetime.datetime.now()
@@ -206,8 +212,12 @@ def contact_us(request):
             email_body = "Dear Admin,\n\n Following are the inquiry details:\n\n " + \
                 "Inquiry Date and Time: "+date_time+"\n First Name: " + \
                 first_name+"\n Last Name: "+last_name+"\n Company Name: " + \
-                company_name+"\n Contact Number: "+contact_no+"\n Email ID: " + \
-                email_address+"\n Requirement Details: "+requirement_details+"\n\n"
+                company_name+"\n Designation: "+designation+"\n City: "+ \
+                city+"\n Contact Number: "+contact_no+"\n Email ID: " + \
+                email_address+"\n Business your organisation is engaged in: " + \
+                detail_1+"\n Relevance of your business to Venter Product: " + \
+                detail_2+"\n How do you think Venter can help your business?" + \
+                detail_3+"\n\n"
 
             admin_list = User.objects.filter(is_superuser=True)
             for admin in admin_list:
@@ -222,6 +232,97 @@ def contact_us(request):
         else:
             return render(request, './Venter/contact_us.html', {'contact_form': contact_form, 'successful_submit': False})
     return render(request, './Venter/contact_us.html', {'contact_form': contact_form, 'successful_submit': None})
+
+def request_demo(request):
+    """
+    View logic to email the administrator the contact details submitted by an organisation requesting demo.
+    The contact details are submitted through the 'request_demo' template form.
+
+    For POST request-------
+        The contact details of an organisation are collected in the ContactForm.
+        If the form is valid, an email is sent to the website administrator.
+    For GET request-------
+        The request_demo template is rendered
+    """
+    contact_form = ContactForm()
+
+    if request.method == 'POST':
+        contact_form = ContactForm(request.POST)
+        if contact_form.is_valid():
+            first_name = contact_form.cleaned_data.get('first_name')
+            last_name = contact_form.cleaned_data.get('last_name')
+            company_name = contact_form.cleaned_data.get('company_name')
+            designation = contact_form.cleaned_data.get('designation')
+            city = contact_form.cleaned_data.get('city')
+            contact_no = contact_form.cleaned_data.get('contact_no')
+            email_address = contact_form.cleaned_data.get('email_address')
+            detail_1 = contact_form.cleaned_data.get('detail_1')
+            detail_2 = contact_form.cleaned_data.get('detail_2')
+            detail_3 = contact_form.cleaned_data.get('detail_3')
+
+            # get current date and time
+            now = datetime.datetime.now()
+            date_time = now.strftime("%Y-%m-%d %H:%M")
+
+            # prepare email body
+            email_body = "Dear Admin,\n\n Following are the inquiry details:\n\n " + \
+                "Inquiry Date and Time: "+date_time+"\n First Name: " + \
+                first_name+"\n Last Name: "+last_name+"\n Company Name: " + \
+                company_name+"\n Designation: "+designation+"\n City: "+ \
+                city+"\n Contact Number: "+contact_no+"\n Email ID: " + \
+                email_address+"\n Business your organisation is engaged in: " + \
+                detail_1+"\n Relevance of your business to Venter Product: " + \
+                detail_2+"\n How do you think Venter can help your business?" + \
+                detail_3+"\n\n"
+
+            admin_list = User.objects.filter(is_superuser=True)
+            for admin in admin_list:
+                s = (admin.username, admin.email)
+                ADMINS.append(s)
+
+            mail_admins('Venter Inquiry', email_body)
+            # contact_form.save()
+            contact_form = ContactForm()
+            return render(request, './Venter/request_demo.html', {
+                'contact_form': contact_form, 'successful_submit': True})
+    return render(request, './Venter/request_demo.html', {
+        'contact_form': contact_form, 'successful_submit': False
+    })
+
+class AddProposalView(LoginRequiredMixin, CreateView):
+    """
+    Arguments------
+        1) CreateView: View to add proposal by a CIVIS organisation_admin only.
+        2) LoginRequiredMixin: Request to add proposal by non-authenticated users,
+        will throw an HTTP 404 error
+    """
+    model = User
+
+    def post(self, request, *args, **kwargs):
+        user_form = UserForm(request.POST)
+        if user_form.is_valid():
+            user_obj = user_form.save(commit=False)
+            password = user_form.cleaned_data.get('password')
+            try:
+                validate_password(password, user_obj)
+                user_obj.set_password(password)
+                user_obj.save()
+                org_name = request.user.profile.organisation_name
+                profile = Profile.objects.create(
+                    user=user_obj, organisation_name=org_name)
+                profile.save()
+                user_form = UserForm()
+                return render(request, './Venter/add_proposal.html',
+                              {'user_form': user_form, 'successful_submit': True})
+            except ValidationError as e:
+                user_form.add_error('password', e)
+                return render(request, './Venter/add_proposal.html', {'user_form': user_form, 'successful_submit': False})
+        else:
+            return render(request, './Venter/add_proposal.html', {'user_form': user_form, 'successful_submit': False})
+
+    def get(self, request, *args, **kwargs):
+        user_form = UserForm()
+        return render(request, './Venter/add_proposal.html', {'user_form': user_form, 'successful_submit': False})
 
 @require_http_methods(["GET"])
 def about_us(request):
@@ -313,7 +414,7 @@ def predict_result(request, pk):
     # temp1 = filemeta.filename
     # temp2 = os.path.splitext(temp1)
     # custom_input_file_name = temp2[0]
-    
+
     # output_json_file_name = 'results__'+custom_input_file_name+'.json'
     # output_xlsx_file_name = 'results__'+custom_input_file_name+'.xlsx'
 
@@ -334,10 +435,10 @@ def predict_result(request, pk):
         temp1 = filemeta.filename
         temp2 = os.path.splitext(temp1)
         custom_input_file_name = temp2[0]
-        
+
         output_json_file_name = 'results__'+custom_input_file_name+'.json'
         output_xlsx_file_name = 'results__'+custom_input_file_name+'.xlsx'
- 
+
         output_file_path_json = os.path.join(output_directory_path, output_json_file_name)
         output_file_path_xlsx = os.path.join(output_directory_path, output_xlsx_file_name)
 
@@ -350,6 +451,8 @@ def predict_result(request, pk):
 
         sm = SimilarityMapping(filemeta.input_file.path)
         dict_data = sm.driver()
+
+        # sm = SimilarityMapping(dict --> {domain: set_of_keywords} ,response_filepath)
 
         if dict_data:
             filemeta.has_prediction = True
@@ -369,6 +472,22 @@ def predict_result(request, pk):
             df = pd.DataFrame({key:pd.Series(value) for key, value in dict_data[domain].items()})
             df.to_excel(download_output, sheet_name=domain)
         download_output.save()
+
+        # colNames=[]
+        # rows=[]
+        # for domain in dict_data:
+        #     print('Writing Excel for domain %s' % domain)
+        #     for category in dict_data[domain].keys():
+        #         colNames.append(category)
+        #         print("==================category list===========")
+        #         for i in colNames:
+        #             print("category: ", i)
+        #     for key, value in dict_data[domain].items():
+        #         rows.append(pd.Series(value))
+        #     # df = pd.DataFrame({key:pd.Series(value) for key, value in dict_data[domain].items()})
+        #     df = pd.DataFrame(rows, columns=colNames)
+        #     df.to_excel(download_output, sheet_name=domain)
+        # download_output.save()
 
         filemeta.output_file_xlsx = output_file_path_xlsx
         filemeta.save()
@@ -450,13 +569,13 @@ def predict_csv(request, pk):
         temp1 = filemeta.filename
         temp2 = os.path.splitext(temp1)
         custom_input_file_name = temp2[0]
-        
+
         output_json_file_name = 'results__'+custom_input_file_name+'.json'
         output_csv_file_name = 'results__'+custom_input_file_name+'.csv'
 
         output_file_path_json = os.path.join(output_directory_path, output_json_file_name)
         output_file_path_csv = os.path.join(output_directory_path, output_csv_file_name)
-        
+
         input_file_path = filemeta.input_file.path
         csvfile = pd.read_csv(input_file_path, sep=',', header=0, encoding='latin1')
         csvfile.columns = [col.strip() for col in csvfile.columns]
@@ -464,6 +583,12 @@ def predict_csv(request, pk):
         complaint_description = list(csvfile['complaint_description'])
         ward_name = list(csvfile['ward_name'])
         ward_list = list(set(ward_name))
+
+        print("--------------------------inside predict csv function")
+        print("============complaint description type: ", type(complaint_description))
+        print(complaint_description)
+        print("============ward list type: ", type(ward_list))
+
         date_created = []
 
         for x in list(csvfile['complaint_created']):
@@ -544,7 +669,7 @@ def predict_csv(request, pk):
 
             for item, cat in zip(dict_list, custom_category_list):
                 item['category'] = cat
-                
+
         dict_list = sorted(dict_list, key=lambda k: k['highest_confidence'], reverse=True)
 
     # preparing ward list and date list for multi-filter widget
@@ -616,59 +741,19 @@ def wordcloud(request, pk):
         1) The categories for a particular domain are populated in the dropdown widget (in wordcloud template)
     """
     filemeta = File.objects.get(pk=pk)
+    wordcloud_category_list = []
 
     if request.method == 'POST':
-        wordcloud_category_list = []
-        if str(request.user.profile.organisation_name) == 'ICMC':
-            pass
-        elif str(request.user.profile.organisation_name) == 'CIVIS':
+        if str(request.user.profile.organisation_name) == 'CIVIS':
             domain_name = request.POST['wordcloud_domain_name']
-
-            with open('wordcloud_output_data.json') as json_file:
-                output_dict = json.load(json_file)
-    
-            domain_items_list = output_dict[domain_name]
-            for domain_item in domain_items_list:
-                for category, category_wordcloud_dict in domain_item.items():
-                    wordcloud_category_list.append(category)
-                    
+            dict_data = json.load(filemeta.output_file_json)
+            domain_data = dict_data[domain_name]
+            for category, category_dict in domain_data.items():
+                wordcloud_category_list.append(category)
+            wordcloud_category_list = wordcloud_category_list[:-1]
         return render(request, './Venter/wordcloud.html', {'category_list': wordcloud_category_list, 'filemeta': filemeta, 'domain_name': domain_name})
     else:
-        wordcloud_category_list = []
         if str(request.user.profile.organisation_name) == 'ICMC':
-            print("organisation icmc")
-            output_file_path = filemeta.output_file_xlsx.path
-            output_file = pd.read_csv(output_file_path, sep=',', header=0)
-            
-            temp_dict = defaultdict(list)
-            
-            for predicted_category_str, complaint_description in zip(output_file['Predicted_Category'], output_file['complaint_description']):
-                predicted_category_list = literal_eval(predicted_category_str)
-                if predicted_category_list:
-                    final_cat = predicted_category_list[0]
-                    final_cat = re.split(r"\(", final_cat)[0]
-                    final_cat = final_cat.strip(' ')
-
-                    if final_cat not in temp_dict:
-                        response_list = []
-                        response_list.append(complaint_description)
-                        temp_dict[final_cat] = response_list
-                    else:
-                        response_list = []
-                        response_list.append(complaint_description)
-                        temp_dict[final_cat].append(complaint_description)
-                else:
-                    pass
-            wordcloud_input_dict = dict(temp_dict)
-            print("writing to json file")
-            with open('wordcloud_input_data.json', 'w') as fp:
-                json.dump(wordcloud_input_dict, fp)
-
-            keys = ["garbage", "recreation park", "dumpster on road", "traffic near K.G road", "plant trees on pavement", "road conditions", "water pond"]
-            values = [10, 90, 30, 20, 54, 45, 100]
-            words = {}
-            words = dict(zip(keys, values))
-
             category_queryset = Category.objects.filter(organisation_name='ICMC').values_list('category', flat=True)
             wordcloud_category_list = list(category_queryset)
         return render(request, './Venter/wordcloud.html', {'category_list': wordcloud_category_list, 'filemeta': filemeta})
@@ -684,12 +769,11 @@ def wordcloud_contents(request, pk):
     filemeta = File.objects.get(pk=pk)
     if str(request.user.profile.organisation_name) == 'ICMC':
         wordcloud_category_list = []
-        print("====================ICMC inside wordcloud contents------------")
         output_file_path = filemeta.output_file_xlsx.path
         output_file = pd.read_csv(output_file_path, sep=',', header=0)
-        
+
         temp_dict = defaultdict(list)
-        
+
         for predicted_category_str, complaint_description in zip(output_file['Predicted_Category'], output_file['complaint_description']):
             predicted_category_list = literal_eval(predicted_category_str)
             if predicted_category_list:
@@ -723,11 +807,11 @@ def wordcloud_contents(request, pk):
     elif str(request.user.profile.organisation_name) == 'CIVIS':
         category_name = request.POST['category_name']
         domain_name = request.POST['domain_name']
-        print("=================domain_name in wordcloud_contents: ", domain_name)
         wordcloud_category_list = json.loads(request.POST['category_list'])
 
-        with open('wordcloud_output_data.json') as json_file:
-                    output_dict = json.load(json_file)
+        # with open('wordcloud_output_data.json') as json_file:
+        #             output_dict = json.load(json_file)
+        output_dict = generate_wordcloud(filemeta.output_file_json.path)
 
         domain_items_list = output_dict[domain_name]
         words = {}
@@ -735,13 +819,12 @@ def wordcloud_contents(request, pk):
         for domain_item in domain_items_list:
             if list(domain_item.keys())[0].split('\n')[0].strip() == category_name.strip():
                 words = list(domain_item.values())[0]
-        print("==========================category_name: ", category_name)
         return render(request, './Venter/wordcloud.html', {'category_list': wordcloud_category_list, 'filemeta': filemeta, 'words': words, 'domain_name': domain_name, 'category_name': category_name})
 
 
 @login_required
 @require_http_methods(["POST"])
-def visualization_dashboard(request, pk):
+def chart_editor(request, pk):
     """
         View logic to display chart editor for the selcted domain
     """
@@ -762,7 +845,7 @@ def visualization_dashboard(request, pk):
     temp1 = filemeta.filename
     temp2 = os.path.splitext(temp1)
     custom_input_file_name = temp2[0]
-    
+
     output_json_file_name = 'results__'+custom_input_file_name+'.json'
     output_xlsx_file_name = 'results__'+custom_input_file_name+'.xlsx'
 
@@ -801,5 +884,6 @@ def visualization_dashboard(request, pk):
             domain_stats.append(column)
         dict_data[domain_name]['Statistics'] = jsonpickle.encode(domain_stats)
         domain_name = request.POST['input_domain_name']
-            
-    return render(request, './Venter/visualization_dashboard.html', {'filemeta': filemeta, 'domain_list': domain_list, 'dict_data': json.dumps(dict_data), 'domain_name': domain_name})
+
+    return render(request, './Venter/chart_editor.html', {'filemeta': filemeta, 'domain_list': domain_list, 'dict_data': json.dumps(dict_data), 'domain_name': domain_name})
+ 

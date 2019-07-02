@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
-# import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,12 +19,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = config('SECRET_KEY', 'p!63vi=_4)o5h8k0ep4uy2e6ou^k$9wels#e&&x=^^!=$xa21o')
 SECRET_KEY = 'p!63vi=_4)o5h8k0ep4uy2e6ou^k$9wels#e&&x=^^!=$xa21o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-# DEBUG = False
+# DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -85,15 +83,6 @@ DATABASES = {
     }
 }
 
-# db_from_env = dj_database_url.config(conn_max_age=500)
-# DATABASES['default'].update(db_from_env)
-
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default = config('DATABASE_URL')
-#     )
-# }
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -127,10 +116,8 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, "static"),
-# ]
-MEDIA_URL = '/media/'
+# MEDIA_URL = '/media/'
+MEDIA_URL = '/MEDIA/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "MEDIA")
 
@@ -145,14 +132,14 @@ LOGOUT_REDIRECT_URL = 'login'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'ventermsr@gmail.com'
-EMAIL_HOST_PASSWORD = 'Venter@123'
+EMAIL_HOST_USER = 'enter email id'
+EMAIL_HOST_PASSWORD = 'enter password'
 EMAIL_PORT = 587
 
 # Maximum size of file uploaded by user
 # 5242880 = 5 MB
 
-ADMINS = [('Venter Admin', 'ventermsr@gmail.com')]
+ADMINS = [('Venter Admin', 'venterproject@gmail.com')]
 
 MAX_UPLOAD_SIZE = "5242880"
 

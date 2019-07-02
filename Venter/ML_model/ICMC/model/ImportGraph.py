@@ -96,7 +96,7 @@ class ImportGraph:
 
                 reshaped_w_e = tf.reshape(word_embeddings, [in_size * self.max_padded_sentence_length, embedding_dim])
 
-                # print(reshaped_w_e)
+                print(reshaped_w_e)
 
                 no_of_nurons_h1 = 512
                 Wa = init_weight([embedding_dim, no_of_nurons_h1], 'Wa')
@@ -170,8 +170,8 @@ class ImportGraph:
     def run(self, data):
         """ Running the activation operation previously imported """
         # The 'x' corresponds to name of input placeholder
-        # print(')()()()()()()()()()()()()(')
-        # print({self.X: data.shape})
+        print(')()()()()()()()()()()()()(')
+        print({self.X: data.shape})
         return self.sess.run(self.probs, feed_dict={self.X: data})
 
     def process_query(self, data, flag):
@@ -179,7 +179,7 @@ class ImportGraph:
         processes_data = []
         for line in data:
             if flag == 1:
-                tokens = TweetTokenizer().tokenize(line.strip())
+                tokens = TweetTokenizer().tokenize(str(line).strip())
             else:
                 tokens = line.strip().split()
             indices = []
@@ -188,16 +188,16 @@ class ImportGraph:
                 if token.strip() in self.word_index_map.keys():
                     indices.append(self.word_index_map[token.strip()])
                     clean_words.append(token.strip())
-            # print(indices)
+            print(indices)
             if len(indices) < 100:
                 indices += [self.last_index] * \
                     (self.max_padded_sentence_length - len(indices))
             
             if len(indices) > 35:
                 indices = indices[:35]
-            # print(indices)
+            print(indices)
             processes_data.append(indices)
-            # print(np.asarray(processes_data).shape)
-            # print('***')
+            print(np.asarray(processes_data).shape)
+            print('***')
         print('**************PROCESS QUERY END*****************')
         return np.array(processes_data)

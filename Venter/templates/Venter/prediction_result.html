@@ -177,8 +177,8 @@
       $("#toolbar-container").show();
     };
     
-    // visualization function to take the domain
-    function visualization() {
+    // chart editor function to take the domain
+    function chart_editor() {
       var domain_name = $('.nav-tabs .active > a').attr('href');
       document.getElementById('input_domain_name').value = domain_name;
       document.getElementById('vis_form').submit();
@@ -265,10 +265,10 @@
           <div class="row toolbar-row">
 
             <div class="col-sm-3">
-              <form method="post" id="vis_form" class="vis-form" action="{% url 'visualization_dashboard' filemeta.pk %}">
+              <form method="post" id="vis_form" class="vis-form" action="{% url 'chart_editor' filemeta.pk %}">
                 {% csrf_token %}
                 <input type="hidden" id="input_domain_name" name="input_domain_name" value=""/>
-                <button type="button" class="btn btn-primary" onclick="visualization();">
+                <button type="button" class="btn btn-primary" onclick="chart_editor();">
                   Visualize&nbsp;<i class="nc-icon nc-app download-fa" aria-hidden="true"></i>
                 </button>
               </form>

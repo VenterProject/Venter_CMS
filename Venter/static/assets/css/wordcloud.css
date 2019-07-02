@@ -19,7 +19,7 @@ Styling for wordcloud.html
 }
 
 div.sidebar-wrapper li.wordcloud-item{
-    display: block;
+    display: none;
 }
 
 .nav li.wordcloud-item .nav-link{

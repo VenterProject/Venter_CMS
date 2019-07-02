@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="../../static/assets/fonts/linearicons/style.css">
 <script src="../../static/assets/js/jquery-3.3.1.min.js"></script>
 <script src="../../static/assets/js/main.js"></script>
-<link rel="stylesheet" href="../../static/assets/css/contact_us.css">
+<link rel="stylesheet" href="../../static/assets/css/request_demo.css">
 
 {% if successful_submit %}
 <script type="text/javascript">
@@ -73,26 +73,14 @@
                     </div>
                     <br>
                     <div class="contact-social-media">
-                        <span class="contact-media-title">
-                                Connect With Us
-                        </span>
-                        <div class="row media-icons-row">
-                            <div class="col-sm-3">
-                                <a href="https://www.youtube.com/watch?v=4HBmdexe7-I" class="fa fa-youtube"></a>
-                            </div>  
-                            <div class="col-sm-3">
-                                <a href="#" class="fa fa-facebook"></a>   
-                            </div> 
-                            <div class="col-sm-3">
-                                <a href="https://www.linkedin.com/company/venter-iitb" class="fa fa-linkedin"></a>  
-                            </div>    
-                        </div>    
+                        <iframe width="575" height="500" src="https://www.youtube.com/embed/4HBmdexe7-I">
+                        </iframe> 
                     </div>    
                 </div>
                 <form class="contact100-form validate-form" method="post" action="{% url 'contact_us' %}">
                     {% csrf_token %}
                     <span class="contact100-form-title">
-                        Send Us A Message
+                        Schedule a Demo
                     </span>
 
                     <label class="label-input100" for="first-name">First Name<sup class="required-field-mark">*</sup></label>
@@ -147,7 +135,7 @@
 
                     <div class="container-contact100-form-btn">
                         <button class="contact100-form-btn">
-                            Submit
+                            Send Request
                         </button>
                     {% if contact_form.errors %}
                     {% for field in contact_form %}

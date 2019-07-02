@@ -182,7 +182,7 @@ td.table-cell-cat{
 }
 
 div.sidebar-wrapper li.wordcloud-item{
-    display: block;
+    display: none;
 }
 
 #tbody_table tr {
@@ -193,4 +193,6 @@ div.sidebar-wrapper li.wordcloud-item{
     background-color: white;
     border: #295C87 solid 1px;
     border-radius: 3px;
+    width: 1200px;
+    overflow-x: scroll;
 }

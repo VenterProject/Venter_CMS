@@ -94,7 +94,9 @@ def categorizer():
     responsePath = os.path.join(BASE_DIR, 'Venter/ML_model/Civis/data/comments/')
     categoryPath = os.path.join(BASE_DIR, 'Venter/ML_model/Civis/data/sentences/')
     responseDomains = os.listdir(responsePath)
+    responseDomains.sort()
     categoryDomains = os.listdir(categoryPath)
+    categoryDomains.sort()
 
     #dictionary for populating the json output
     results = {}

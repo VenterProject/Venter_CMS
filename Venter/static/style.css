@@ -32,6 +32,28 @@ Styling for index.html
 color: #58b0e0;
 }
 
+.demo-button{
+  font-size: 14pt;
+  font-family: 'Times New Roman', Times, serif;
+  background-color: transparent;
+  color: white;
+  border: solid grey;
+  width: 147px;
+  height: 35px;
+  border-radius: 3px;
+}
+
+.demo-button:hover{
+  font-size: 14pt;
+  font-family: 'Times New Roman', Times, serif;
+  background-color: transparent;
+  color: white;
+  border: solid white;
+  width: 147px;
+  height: 35px;
+  border-radius: 3px;
+}
+
 @media screen and (max-width: 600px) {
   .topnav a.nav-link{display: none;}
   .topnav a.icon {
