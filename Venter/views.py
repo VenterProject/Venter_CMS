@@ -467,9 +467,69 @@ def predict_result(request, pk):
 
         download_output = pd.ExcelWriter(output_file_path_xlsx, engine='xlsxwriter')
 
-        for domain in dict_data:
-            print('Writing Excel for domain %s' % domain)
-            df = pd.DataFrame({key:pd.Series(value) for key, value in dict_data[domain].items()})
+        # for domain in dict_data:
+        #     print('Writing Excel for domain %s' % domain)
+        #     df = pd.DataFrame({key:pd.Series(value) for key, value in dict_data[domain].items()})
+        #     df.to_excel(download_output, sheet_name=domain)
+        # download_output.save()
+        for domain, cat_dict in dict_data.items():
+            domain_columns = list(cat_dict.keys())
+            subdomain_columns = ['response', 'score']
+            temp_column_index = 0
+            codes = []
+            subcodes = []
+
+            for dc in domain_columns:
+                codes.append(temp_column_index)
+                codes.append(temp_column_index)
+                subcodes.append(0)
+                subcodes.append(1)
+                temp_column_index += 1
+            multiIndex = pd.MultiIndex(levels = [domain_columns, subdomain_columns], labels = [codes, subcodes])
+
+            df = pd.DataFrame(columns=multiIndex)
+
+            temp_responses = []
+            temp_scores = []
+
+            for cat_as_key, res_dict_list in cat_dict.items():
+                temp_df_res = []
+                temp_df_score = []
+
+                if cat_as_key!='Novel':
+                    for res_dict in res_dict_list:
+                        # print(res_dict['score'])
+                        temp_df_res.append(res_dict['response'])
+                        temp_df_score.append(res_dict['score'])
+                else:
+                    for res_list in res_dict_list.values():
+                        temp_df_res.extend(res_list)
+                    for response in temp_df_res:
+                        temp_df_score.append(-1)
+
+                temp_responses.append(temp_df_res)
+                temp_scores.append(temp_df_score)
+
+            del temp_df_res, temp_df_score
+
+            len_holder = sorted(temp_responses, key=len, reverse=True)
+            len_holder = len(len_holder[0])
+            weighted_temp_responses = []
+            weighted_temp_scores = []
+
+            for temp_df_res, temp_df_score in zip(temp_responses, temp_scores):
+                for x in range(len_holder - len(temp_df_score)):
+                    temp_df_res.append('')
+                    temp_df_score.append('')
+                weighted_temp_responses.append(temp_df_res)
+                weighted_temp_scores.append(temp_df_score)
+
+            del temp_responses, temp_scores, temp_df_res, temp_df_score
+
+            for cat_as_key, temp_df_res, temp_df_score in zip(cat_dict.keys(), weighted_temp_responses, weighted_temp_scores):
+                    df[cat_as_key, 'response'] = temp_df_res
+                    df[cat_as_key, 'score'] = temp_df_score
+
             df.to_excel(download_output, sheet_name=domain)
         download_output.save()
 
@@ -886,4 +946,3 @@ def chart_editor(request, pk):
         domain_name = request.POST['input_domain_name']
 
     return render(request, './Venter/chart_editor.html', {'filemeta': filemeta, 'domain_list': domain_list, 'dict_data': json.dumps(dict_data), 'domain_name': domain_name})
- 
