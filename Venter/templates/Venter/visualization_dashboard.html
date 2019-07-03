@@ -18,6 +18,7 @@
 
 <link rel="stylesheet" href="../../static/assets/css/visualization_dashboard.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="../../static/assets/js/download.js"></script>
 
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script type="text/javascript">
@@ -35,30 +36,37 @@
       stats = jQuery.parseJSON(stats);
 
     var data = new google.visualization.arrayToDataTable(stats);
-      // Create the chart to edit.
-      var wrapper = new google.visualization.ChartWrapper({
-         'chartType':'ColumnChart',
-         'dataTable':data,
-         'options': {'title':'test', 
-                      width: '1500',
-                      height: '1600',
-                      isStacked: true,
-                      legend: {
-                        position: 'right'
-                      },
-                    }
-      });
-
-      chartEditor = new google.visualization.ChartEditor();
-      google.visualization.events.addListener(chartEditor, 'ok', redrawChart);
-      chartEditor.openDialog(wrapper, {});
+        // Create the chart to edit.
+        var wrapper = new google.visualization.ChartWrapper({
+            'chartType': 'ColumnChart',
+            'dataTable': data,
+            'options': {
+                'title': 'test',
+                width: '1500',
+                height: '1600',
+                isStacked: true,
+                legend: {
+                    position: 'right'
+                },
+            }
+        });
+        chartEditor = new google.visualization.ChartEditor();
+        google.visualization.events.addListener(chartEditor, 'ok', redrawChart);
+        chartEditor.openDialog(wrapper, {});
     }
 
-    // On "OK" save the chart to a <div> on the page.
     function redrawChart(){
-      chartEditor.getChartWrapper().draw(document.getElementById('vis_div'));
+      wrapper = chartEditor.getChartWrapper();
+      google.visualization.events.addListener(wrapper, 'ready', readyWrapper);
+      wrapper.draw(document.getElementById('vis_div'));
     }
 
+    function readyWrapper(){
+        $('#download_graph-btn').click(function () {
+            var imageUri = wrapper.getChart().getImageURI();
+            download(imageUri, "chart", "image/png");
+        });
+    }
   </script>
 <body>
     <div class="sidebar" src="../../static/assets/img/sidebar-2.jpg" data-color="blue">
@@ -129,8 +137,10 @@
             <input type="submit" name="loadcharteditor" id="loadcharteditor" value="Edit me!" onclick="loadEditor()" style="font-size:18px;">
         </p>
         <div id="vis_div" class="chartsize"></div>
+        <button type="button" class="btn btn-primary" id="download_graph-btn">
+            Download graph &nbsp;<i class="fa fa-download download-fa" aria-hidden="true"></i>
+        </button>
         <a href="{% url 'predict_result' filemeta.pk %}" class="btn btn-default" style="float:right;background-color: green;color: white;">back</a>
-
     </div>  
 </body>
 </html>

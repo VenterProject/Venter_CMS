@@ -10,271 +10,288 @@
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript" src="../../static/assets/js/download.js"></script>
 
-  
+<script>
+  $(document).ready(function () {
+    $('.nav-tabs > li').click(function (event) {
+      $('.nav-tabs > li.active').find("a").attr("style", "background-color: rgb(255,255,255) !important; color: rgb(0,0,0) !important");
+      $('.nav-tabs li').removeClass('active');
+      $(this).addClass('active');
+      $(this).find("a").attr("style", "background-color: rgb(0,0,255) !important; color: rgb(255,255,255) !important");
+      var domain_name = $(this).find("a").attr("href");
+      $(".content-graph").show();
+      drawStuff(domain_name);
+      $("#cardview").show();
+    });
+
+    $('.nav.nav-tabs.nav-fill').click(function (event) {
+      console.log("navclick");
+      var domain_name = $('.nav-tabs .active > a').attr('href');
+      drawStuff(domain_name);
+    });
+
+    $("#toolbar-container").show();
+  });
+</script>
 
 <script>
-    $(document).ready(function () {
-      $('.nav-tabs > li').click(function(event){
-        $('.nav-tabs > li.active').find("a").attr("style", "background-color: rgb(255,255,255) !important; color: rgb(0,0,0) !important");
-        $('.nav-tabs li').removeClass('active');
-        $(this).addClass('active');
-        $(this).find("a").attr("style", "background-color: rgb(0,0,255) !important; color: rgb(255,255,255) !important");
-        var domain_name = $(this).find("a").attr("href");
-        drawStuff(domain_name);
-      });
-
-      $('.nav-pills > li').click(function(event){
-        $('.nav-pills > li.active').find("a").attr("style", "background-color: rgb(255,255,255) !important; color: rgb(0,0,0) !important");
-        $('.nav-pills li').removeClass('active');
-        $(this).addClass('active');
-        $(this).find("a").attr("style", "background-color: rgb(0,0,255) !important; color: rgb(255,255,255) !important");
-      });
-      
-      // $('#pill-cardview').click(function(event){
-      //   var domain_name = $('.nav-tabs .active > a').attr('href');
-      //   '{% with d="'+domain_name+'" %}';
-      //     console.log("DOAMIN=======: ", '{{d}}');
-      //   '{% endwith %}';
-      //   $("#cardview").tab('show');
-      // });
-
-      $('#pill-graph').click(function(event){
-        console.log("pill-graph");
-        var domain_name = $('.nav-tabs .active > a').attr('href');
-        $(".content-graph").show();
-        $("#cardview").hide();
-        drawStuff(domain_name);
-      });
-      
-      $('.nav.nav-tabs.nav-fill').click(function(event){
-        console.log("navclick");
-        var domain_name = $('.nav-tabs .active > a').attr('href');
-        $("#graph").show();
-        $("#cardview").hide();
-        drawStuff(domain_name);
-        });
-
-        $('#pill-cardview').click(function(event){
-        console.log("pill-graph");
-        $("#cardview").tab('show');
-        });
-
-      $("#chart-download-container").hide();
-  });
-  </script>
-  
-  <script>
-    function rndColor() {
-      var r = ('0' + Math.floor(Math.random() * 256).toString(16)).substr(-2), // red
-        g = ('0' + Math.floor(Math.random() * 256).toString(16)).substr(-2), // green
-        b = ('0' + Math.floor(Math.random() * 256).toString(16)).substr(-2); // blue
-      return '#' + r + g + b;
+  function rndColor() {
+    var r = ('0' + Math.floor(Math.random() * 256).toString(16)).substr(-2), // red
+      g = ('0' + Math.floor(Math.random() * 256).toString(16)).substr(-2), // green
+      b = ('0' + Math.floor(Math.random() * 256).toString(16)).substr(-2); // blue
+    return '#' + r + g + b;
+  }
+  google.charts.load('current', { 'packages': ['corechart'] });
+  google.charts.setOnLoadCallback(drawStuff);
+  function drawStuff(domain_name) {
+    $("#graph").tab('show');
+    $("#cardview").show();
+    $("#cardview").tab('show');
+    if (!domain_name) {
+      var domain_name = $('.nav-tabs .active > a').attr('href');
     }
-    google.charts.load('current', { 'packages': ['corechart'] });
-    google.charts.setOnLoadCallback(drawStuff);
-    function drawStuff(domain_name) {
-      // $("#cardview").hide();
-      $("#graph").tab('show');
-      $('.nav-pills > li.active').find("a").attr("style", "background-color: rgb(255,255,255) !important; color: rgb(0,0,0) !important");
-      $('.nav-pills li').removeClass('active');
-      $("#pill-graph").addClass('active');
-      $("#pill-graph").find("a").attr("style", "background-color: rgb(0,0,255) !important; color: rgb(255,255,255) !important");
-      if (!domain_name) {
-        var domain_name = $('.nav-tabs .active > a').attr('href');
+    $.ajax({
+      url: '{% url "predict_result" filemeta.pk %}',
+      type: 'GET',
+      data: { 'domain_name': domain_name },
+      success: function (resp) {
+        $("#test_cardview").html(resp);
+      },
+      error: function (err) {
+        alert("Cardview not found: " + err.status + " " + err.statusText);
       }
-      var main_dict = jQuery.parseJSON('{{dict_data|escapejs}}');
-      var stats = main_dict[domain_name]['Statistics'];
-      stats = jQuery.parseJSON(stats);
-      
-      noOfNovelCats = stats[stats.length - 1].length - 2
-      colorseries = {}
-      for (i = 0; i < noOfNovelCats; i++) {
-        colorseries[i] = rndColor()
-      }
-      var data = new google.visualization.arrayToDataTable(stats);
-      var options = {
-        width: '1100',
-        height: '600',
-        isStacked: true,
-        legend: {
-          position: 'none'
-        },
-        title: domain_name,
+    });
+    $("#cardview").show();
+    $("#cardview").tab('show');
+    var main_dict = jQuery.parseJSON('{{dict_data|escapejs}}');
+    var stats = main_dict[domain_name]['Statistics'];
+    stats = jQuery.parseJSON(stats);
+    noOfNovelCats = stats[stats.length - 1].length - 2
+    colorseries = {}
+    for (i = 0; i < noOfNovelCats; i++) {
+      colorseries[i] = rndColor()
+    }
+    var data = new google.visualization.arrayToDataTable(stats);
+    var options = {
+      width: '1100',
+      height: '600',
+      isStacked: true,
+      legend: {
+        position: 'none'
+      },
+      title: domain_name,
+      titleTextStyle: {
+        fontName: 'Times New Roman',
+        fontSize: 30,
+        bold: true,
+        italic: false,
+        color: '#000099',
+      },
+      titlePosition: 'out',
+      hAxis: {
+        title: 'Category',
         titleTextStyle: {
-          fontName: 'Times New Roman',
-          fontSize: 30,
+          'fontSize': 23,
+          color: 'black',
           bold: true,
           italic: false,
-          color: '#000099',
         },
-        titlePosition: 'out',
-        hAxis: {
-          title: 'Category',
-          titleTextStyle: {
-            'fontSize': 23,
-            color: 'black',
-            bold: true,
-            italic: false,
-          },
-          'textStyle': {
-            'fontSize': 15,
-            color: 'black',
-          },
-          gridlines: 3,
-          slantedText: true,
-          slantedTextAngle: 45,
+        'textStyle': {
+          'fontSize': 15,
+          color: 'black',
         },
-        vAxis: {
-          title: 'Number of responses',
-          titleTextStyle: {
-            'fontSize': 23,
-            color: 'black',
-            bold: true,
-            italic: false,
-          },
-          'textStyle': {
-            'fontSize': 15,
-            color: 'black',
-            bold: true,
-          },
+        gridlines: 3,
+        slantedText: true,
+        slantedTextAngle: 45,
+      },
+      vAxis: {
+        title: 'Number of responses',
+        titleTextStyle: {
+          'fontSize': 23,
+          color: 'black',
+          bold: true,
+          italic: false,
         },
-        bar: {
-          groupWidth: "90%"
+        'textStyle': {
+          'fontSize': 15,
+          color: 'black',
+          bold: true,
         },
-        series: colorseries,
-        is3D: true,
-      };
-      var chart_div = document.getElementById('chart_div');
-      var chart = new google.visualization.ColumnChart(chart_div);
-     
-      function selectHandler() {
-        
-        var selectedItem = chart.getSelection()[0];
-        if (selectedItem) {
-          var domain_name = $('.nav-tabs .active > a').attr('href');
-          var category = data.getValue(selectedItem.row, 0);
-          $("#cardview").tab('show');
-          console.log("selecthandler-cvshow");
-          $("#cardview").show();
-          console.log("selecthandler-cvshowmodified");
-          $(".content-graph").hide();
-          $('.nav-pills > li.active').find("a").attr("style", "background-color: rgb(255,255,255) !important; color: rgb(0,0,0) !important");
-          $('.nav-pills li').removeClass('active');
-          $("#pill-cardview").addClass('active');
-          $("#pill-cardview").find("a").attr("style", "background-color: rgb(0,0,255) !important; color: rgb(255,255,255) !important");
-          $.ajax({
-            url: '{% url "predict_result" filemeta.pk %}',
-            type: 'GET',
-            data: { 'domain_name': domain_name, 'category': category },
-            success: function (resp) {
-              $("#test_cardview").html(resp);
-            },
-            error: function (err) {
-              alert("Cardview not found: " + err.status + " " + err.statusText);
-            }
-          });
-        }
-      }
-      google.visualization.events.addListener(chart, 'select', selectHandler);    
-      google.visualization.events.addListener(chart, 'ready', function () {
-          var imgUri = chart.getImageURI();
-          $('#download_graph-btn').click(function() {
-            download(imgUri, "chart.png", "image/png");
-          });
-      });
-      chart.draw(data, options);
-      $("#chart-download-container").show();
+      },
+      bar: {
+        groupWidth: "90%"
+      },
+      series: colorseries,
+      is3D: true,
     };
-    
-    // visualization function to take the domain
-    function visualization() {
-      var domain_name = $('.nav-tabs .active > a').attr('href');
-      document.getElementById('input_domain_name').value = domain_name;
-      document.getElementById('vis_form').submit();
+    var chart_div = document.getElementById('chart_div');
+    var chart = new google.visualization.ColumnChart(chart_div);
+
+    function selectHandler() {
+
+      var selectedItem = chart.getSelection()[0];
+      if (selectedItem) {
+        var domain_name = $('.nav-tabs .active > a').attr('href');
+        var category = data.getValue(selectedItem.row, 0);
+        $("#cardview").tab('show');
+        $("#cardview").show();
+        $(".content-graph").show();
+        $.ajax({
+          url: '{% url "predict_result" filemeta.pk %}',
+          type: 'GET',
+          data: { 'domain_name': domain_name, 'category': category },
+          success: function (resp) {
+            $("#test_cardview").html(resp);
+          },
+          error: function (err) {
+            alert("Cardview not found: " + err.status + " " + err.statusText);
+          }
+        });
+      }
     }
-  </script>
-  
-  <div class="outer-pr row">
-    <div class="content-domain">
-      <ul class="nav nav-tabs nav-fill" id="domain_tab" role="tablist">
-        {% for domain in domain_list %}
-            {% if domain == domain_list.0 %}
-              <li class="nav-item active">
-                  <a href="{{domain}}" class="nav-link" data-target="#graph" data-toggle="tab" role="tab">
-                      {{domain}}
-                  </a>
-              </li>
-            {% else %}
-              <li class="nav-item">
-                  <a href="{{domain}}" class="nav-link" data-target="#graph" data-toggle="tab" role="tab">
-                      {{domain}}
-                  </a>
-              </li>
-            {% endif %}  
-        {% endfor %}
-      </ul>
+    google.visualization.events.addListener(chart, 'select', selectHandler);
+    google.visualization.events.addListener(chart, 'ready', function () {
+      var imgUri = chart.getImageURI();
+      $('#download_graph-btn').click(function () {
+        download(imgUri, "chart.png", "image/png");
+      });
+    });
+    chart.draw(data, options);
+    $("#toolbar-container").show();
+  };
+
+  // visualization function to take the domain
+  function visualization() {
+    var domain_name = $('.nav-tabs .active > a').attr('href');
+    document.getElementById('input_domain_name').value = domain_name;
+    document.getElementById('vis_form').submit();
+  }
+  function print_to_pdf() {
+    var domain_name = $('.nav-tabs .active > a').attr('href');
+    $.ajax({
+      url: '{% url "predict_result" filemeta.pk %}',
+      type: 'GET',
+      data: { 'domain_name': domain_name, 'flag': true },
+      success: function (resp) {
+        console.log(resp)
+        $("#test-pdf").html(resp)
+      },
+      error: function (err) {
+        alert("Cardview not found: " + err.status + " " + err.statusText);
+      }
+    });
+  }
+  function download_pdf() {
+    var originalContents = document.body.innerHTML;
+    var printReport = document.getElementById('report_data').innerHTML;
+    document.body.innerHTML = printReport;
+    window.print();
+    document.body.innerHTML = originalContents;
+  }
+  function sort_cards() {
+    var cardview_data = jQuery.parseJSON('{{cardview_data}}');
+    for (var key in cardview_data) {
+        var value = dict[key];
+        console.log("Key", key)
+        console.log("Value", value)
+    }
+    // $('ul').sort(function (a, b) {
+    //     var contentA = parseInt($(a).attr('data-sort'));
+    //     var contentB = parseInt($(b).attr('data-sort'));
+    //     return (contentA < contentB) ? -1 : (contentA > contentB) ? 1 : 0;
+    // });
+  }
+
+</script>
+<div class="outer-pr row">
+  <div class="content-domain">
+    <ul class="nav nav-tabs nav-fill" id="domain_tab" role="tablist">
+      {% for domain in domain_list %}
+      {% if domain == domain_list.0 %}
+      <li class="nav-item active">
+        <a href="{{domain}}" class="nav-link" data-target="#graph" data-toggle="tab" role="tab">
+          {{domain}}
+        </a>
+      </li>
+      {% else %}
+      <li class="nav-item">
+        <a href="{{domain}}" class="nav-link" data-target="#graph" data-toggle="tab" role="tab">
+          {{domain}}
+        </a>
+      </li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div id="toolbar-container" class="row toolbar">
+    <div class="col-sm-3">
+      <form method="post" id="vis_form" action="{% url 'visualization_dashboard' filemeta.pk %}">
+        {% csrf_token %}
+        <input type="hidden" id="input_domain_name" name="input_domain_name" value="" />
+        <button type="button" class="btn btn-primary" onclick="visualization();">
+          Chart Editor&nbsp;<i class="fa fa-edit download-fa" aria-hidden="true"></i>
+        </button>
+      </form>
     </div>
-  
-    <div class="content-navigator">
-      <ul class="nav nav-pills justify-content-center" id="navigator_tab" role="tablist">
-        <li class="nav-item active" id="pill-graph">
-          <a class="nav-link" data-toggle="pill" href="#graph">
-            Graph &nbsp; <i class="fa fa-area-chart chart-fa"></i>
-          </a>
-        </li>
-        <li class="nav-item" id="pill-cardview">
-          <a class="nav-link" data-toggle="pill" href="#cardview">
-            CardView &nbsp; <i class="fa fa-list-alt list-fa"></i>
-          </a>
-        </li>
-      </ul>
+    <div class="col-sm-4">
+      <button type="button" class="btn btn-primary" id="download_graph-btn">
+        Download graph &nbsp;<i class="fa fa-download download-fa" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="col-sm-3">
+      <button type="button" class="btn btn-primary" onclick="download_pdf();">
+        Print report &nbsp;<i class="fa fa-print download-fa" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-primary">
+        Wordcloud&nbsp;<i class="fa fa-cloud download-fa" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <div id="report_data">
+    <div class="graph-div">
+      <div class="detailed-responses"><label class="label-responses">Overview Of Responses</label></div>
+      <div id="graph" class="tab-pane fade content-graph">
+        <div id="chart_div" class="graph-container"></div>
+      </div>
     </div>
 
     <div class="tab-content">
       <div id="cardview" class="tab-pane fade content-cardview">
+        <div class="detailed-responses"><label class="label-responses">Detailed Responses</label></div> 
         <div class="card-container" id="card-container">
-            <script>
-              $('#pill-cardview').click(function(event){
-                var domain_name = $('.nav-tabs .active > a').attr('href');
-                var cardview_data;
-                console.log("Domain Name", domain_name);
-                $.ajax({
-                  url: '{% url "predict_result" filemeta.pk %}',
-                  type: 'GET',
-                  data: {'domain_name': domain_name},
-                  success: function (resp) {
-                    $("#test_cardview").html(resp);
-                  },
-                  error:function(err){
-                    alert("Cardview not found: "+err.status+" "+err.statusText);
-                  }
-                });
-                
-                $("#cardview").show();
-                $(".content-graph").hide();
+          <script>
+            $('#pill-cardview').click(function (event) {
+              var domain_name = $('.nav-tabs .active > a').attr('href');
+              var cardview_data;
+              console.log("Domain Name", domain_name);
+              $.ajax({
+                url: '{% url "predict_result" filemeta.pk %}',
+                type: 'GET',
+                data: { 'domain_name': domain_name },
+                success: function (resp) {
+                  $("#test_cardview").html(resp);
+                },
+                error: function (err) {
+                  alert("Cardview not found: " + err.status + " " + err.statusText);
+                }
               });
-            </script>
-            <div id="test_cardview">
 
-            </div>
+              $("#cardview").show();
+              $(".content-graph").hide();
+            });
+          </script>
+          <div id="test_cardview">
+          </div>
         </div>
-      </div>
-  
-      <div id="graph" class="tab-pane fade content-graph">
-        <div id="chart-download-container">
-            <form method="post" id="vis_form" class="vis-btn" action="{% url 'visualization_dashboard' filemeta.pk %}">
-                    {% csrf_token %}
-                    <input type="hidden" id="input_domain_name" name="input_domain_name" value=""/>
-                    <button type="button" class="btn btn-primary" onclick="visualization();">Visualize</button>
-            </form>
-            <button type="button" class="btn btn-primary download_graph-btn" id="download_graph-btn">
-                Download graph &nbsp;<i class="fa fa-download download-fa" aria-hidden="true"></i>
-            </button>
-        </div>  
-        <div id="chart_div" class="graph-container"></div>
       </div>
     </div>
   </div>
+</div>
+</div>
+<div id="test-pdf"></div>
 
 
 {% endblock %}
