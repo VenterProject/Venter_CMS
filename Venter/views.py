@@ -906,10 +906,15 @@ def wordcloud_contents(request, pk):
 
         domain_items_list = output_dict[domain_name]
         words = {}
-
         for domain_item in domain_items_list:
             if list(domain_item.keys())[0].split('\n')[0].strip() == category_name.strip():
                 words = list(domain_item.values())[0]
+        for word, freq in words.items():
+            if(word == 'items'):
+                words['item'] = words.pop('items')
+        temp_list = sorted(words.items())
+        words = {}
+        words = dict(temp_list)
         return render(request, './Venter/wordcloud.html', {'category_list': wordcloud_category_list, 'filemeta': filemeta, 'words': words, 'domain_name': domain_name, 'category_name': category_name})
 
 
