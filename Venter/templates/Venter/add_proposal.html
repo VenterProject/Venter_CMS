@@ -470,8 +470,13 @@
                         <div class="footer-center">
                             <p class="p2-proposal">Proposal has been added.</p><br>
                             <a href="{% url 'add_proposal' %}">
-                                <button type="button" class="btn btn-info rounded-4">
+                                <button type="button" class="btn btn-warning rounded-4">
                                     Add Proposal &nbsp;&nbsp; <span class="lnr lnr-pencil"></span>
+                                </button>
+                            </a>
+                            <a href="{% url 'upload_file' %}">
+                                <button type="button" class="btn btn-info rounded-4">
+                                    Upload new file &nbsp;&nbsp; <span class="lnr lnr-plus-circle"></span>
                                 </button>
                             </a>
                         </div>

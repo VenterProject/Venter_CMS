@@ -166,6 +166,15 @@ class ProfileForm(forms.ModelForm):
         required=False,
         validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg', 'jpeg'])],)
 
+    def clean_profile_picture(self):
+        uploaded_profile_picture = self.cleaned_data.get('profile_picture')
+        if uploaded_profile_picture.size < int(settings.MAX_PROFILE_PICTURE_UPLOAD_SIZE):
+            return uploaded_profile_picture
+        else:
+            raise forms.ValidationError(
+                "Profile picture size must not exceed 1 MB")
+        return uploaded_profile_picture
+
     def save(self, *args, **kwargs):
         """
         Update the primary profile picture on the related User object as well.

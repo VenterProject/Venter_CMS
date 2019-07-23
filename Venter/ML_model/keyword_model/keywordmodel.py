@@ -8,20 +8,10 @@
 import json
 import os
 import time
-from random import randint
 
-import networkx
 import numpy as np
-from fpdf import FPDF
 from gensim.models import KeyedVectors
-from gensim.similarities import WmdSimilarity
-from networkx.algorithms.components.connected import connected_components
 from nltk.corpus import stopwords
-from nltk.corpus import wordnet as wn
-from nltk.stem import PorterStemmer
-from nltk.tokenize import word_tokenize
-from pyemd import emd
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 from Backend.settings import BASE_DIR
 

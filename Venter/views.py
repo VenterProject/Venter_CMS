@@ -24,7 +24,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
 from nltk import tokenize
 
-from Backend.settings import ADMINS, MEDIA_ROOT
+from Backend.settings import ADMINS, MEDIA_ROOT, STATIC_ROOT
 from Venter.forms import (ContactForm, CSVForm, DomainForm, ExcelForm,
                           KeywordForm, ProfileForm, ProposalForm, UserForm)
 from Venter.models import Category, Domain, File, Keyword, Profile, Proposal
@@ -340,6 +340,7 @@ class AddProposalView(LoginRequiredMixin, CreateView):
                                     {'proposal_form': proposal_form, 'domain_form': domain_form, 'one_save_operation': False})
         else:
             proposal_obj = Proposal.objects.get(proposal_name=proposal_name)
+
             try:
                 domain_obj = Domain.objects.create(proposal_name=proposal_obj, domain_name=domain_name)
             except IntegrityError as e:
@@ -465,7 +466,6 @@ def predict_result(request, pk):
     filemeta = File.objects.get(pk=pk)
     if not filemeta.has_prediction:
         output_directory_path = os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output')
-
         if not os.path.exists(output_directory_path):
             os.makedirs(output_directory_path)
 
@@ -599,7 +599,15 @@ def predict_result(request, pk):
         filemeta.output_file_xlsx = output_file_path_xlsx
         filemeta.save()
     else:
-        dict_data = json.load(filemeta.output_file_json)
+        temp1 = filemeta.filename
+        temp2 = os.path.splitext(temp1)
+        custom_input_file_name = temp2[0]
+        
+        output_json_file_name = 'results__'+custom_input_file_name+'.json'
+        results =  os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output/{output_json_file_name}')
+
+        with open(results,'r') as content:
+            dict_data=json.load(content)
 
     dict_keys = dict_data.keys()
     domain_list = list(dict_keys)
@@ -687,8 +695,6 @@ def predict_csv(request, pk):
         ward_name = list(csvfile['ward_name'])
         ward_list = list(set(ward_name))
 
-        print(complaint_description)
-
         date_created = []
 
         for x in list(csvfile['complaint_created']):
@@ -754,7 +760,16 @@ def predict_csv(request, pk):
         filemeta.output_file_xlsx = output_file_path_csv
         filemeta.save()
     else:
-        dict_list = json.load(filemeta.output_file_json)
+        # dict_list = json.load(filemeta.output_file_json)
+        temp1 = filemeta.filename
+        temp2 = os.path.splitext(temp1)
+        custom_input_file_name = temp2[0]
+        
+        output_json_file_name = 'results__'+custom_input_file_name+'.json'
+        results =  os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output/{output_json_file_name}')
+
+        with open(results,'r') as content:
+            dict_list=json.load(content)
 
         if filemeta.file_saved_status:
             temp_list = []
@@ -817,7 +832,14 @@ def download_table(request, pk):
         temp3 = [x.rstrip() for x in temp2]
         new_sorted_category_list.append(temp3)
 
-    output_csv_file_path = filemeta.output_file_xlsx.path
+    temp1 = filemeta.filename
+    temp2 = os.path.splitext(temp1)
+    custom_input_file_name = temp2[0]
+    
+    output_json_file_name = 'results__'+custom_input_file_name+'.csv'
+    output_csv_file_path =  os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output/{output_json_file_name}')   
+
+    # output_csv_file_path = filemeta.output_file_xlsx.path
     csv_file = pd.read_csv(output_csv_file_path, sep=',', header=0, encoding='utf-8-sig')
 
     if status == "True":
@@ -846,7 +868,17 @@ def wordcloud(request, pk):
     if request.method == 'POST':
         if str(request.user.profile.organisation_name) == 'CIVIS':
             domain_name = request.POST['wordcloud_domain_name']
-            dict_data = json.load(filemeta.output_file_json)
+
+            temp1 = filemeta.filename
+            temp2 = os.path.splitext(temp1)
+            custom_input_file_name = temp2[0]
+            
+            output_json_file_name = 'results__'+custom_input_file_name+'.json'
+            results =  os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output/{output_json_file_name}')
+
+            with open(results,'r') as content:
+                dict_data=json.load(content)
+
             domain_data = dict_data[domain_name]
             for category, category_dict in domain_data.items():
                 wordcloud_category_list.append(category)
@@ -869,7 +901,16 @@ def wordcloud_contents(request, pk):
     filemeta = File.objects.get(pk=pk)
     if str(request.user.profile.organisation_name) == 'ICMC':
         wordcloud_category_list = []
-        output_file_path = filemeta.output_file_xlsx.path
+
+        temp1 = filemeta.filename
+        temp2 = os.path.splitext(temp1)
+        custom_input_file_name = temp2[0]
+        
+        output_json_file_name = 'results__'+custom_input_file_name+'.csv'
+        output_file_path =  os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output/{output_json_file_name}')   
+
+        # output_csv_file_path = filemeta.output_file_xlsx.path
+
         output_file = pd.read_csv(output_file_path, sep=',', header=0)
         temp_dict = defaultdict(list)
         for predicted_category_str, complaint_description in zip(output_file['Predicted_Category'], output_file['complaint_description']):
@@ -907,7 +948,15 @@ def wordcloud_contents(request, pk):
         domain_name = request.POST['domain_name']
         wordcloud_category_list = json.loads(request.POST['category_list'])
 
-        output_dict = generate_wordcloud(filemeta.output_file_json.path)
+        temp1 = filemeta.filename
+        temp2 = os.path.splitext(temp1)
+        custom_input_file_name = temp2[0]
+        
+        output_json_file_name = 'results__'+custom_input_file_name+'.json'
+        output_file_path =  os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output/{output_json_file_name}')   
+
+        # output_dict = generate_wordcloud(filemeta.output_file_json.path)
+        output_dict = generate_wordcloud(output_file_path)
 
         domain_items_list = output_dict[domain_name]
         words = {}
@@ -936,7 +985,16 @@ def chart_editor(request, pk):
     dict_data = {}
     domain_list = []
 
-    dict_data = json.load(filemeta.output_file_json)
+    temp1 = filemeta.filename
+    temp2 = os.path.splitext(temp1)
+    custom_input_file_name = temp2[0]
+    
+    output_json_file_name = 'results__'+custom_input_file_name+'.json'
+    results =  os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output/{output_json_file_name}')
+
+    with open(results,'r') as content:
+        dict_data=json.load(content)
+    # dict_data = json.load(filemeta.output_file_json)
 
     filemeta = File.objects.get(pk=pk)
     output_directory_path = os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output')
