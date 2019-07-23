@@ -24,7 +24,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
 from nltk import tokenize
 
-from Backend.settings import ADMINS, MEDIA_ROOT
+from Backend.settings import ADMINS, MEDIA_ROOT, STATIC_ROOT
 from Venter.forms import (ContactForm, CSVForm, DomainForm, ExcelForm,
                           KeywordForm, ProfileForm, ProposalForm, UserForm)
 from Venter.models import Category, Domain, File, Keyword, Profile, Proposal
@@ -340,6 +340,7 @@ class AddProposalView(LoginRequiredMixin, CreateView):
                                     {'proposal_form': proposal_form, 'domain_form': domain_form, 'one_save_operation': False})
         else:
             proposal_obj = Proposal.objects.get(proposal_name=proposal_name)
+
             try:
                 domain_obj = Domain.objects.create(proposal_name=proposal_obj, domain_name=domain_name)
             except IntegrityError as e:
@@ -465,7 +466,6 @@ def predict_result(request, pk):
     filemeta = File.objects.get(pk=pk)
     if not filemeta.has_prediction:
         output_directory_path = os.path.join(MEDIA_ROOT, f'{filemeta.uploaded_by.organisation_name}/{filemeta.uploaded_by.user.username}/{filemeta.uploaded_date.date()}/output')
-
         if not os.path.exists(output_directory_path):
             os.makedirs(output_directory_path)
 
@@ -686,8 +686,6 @@ def predict_csv(request, pk):
         complaint_description = list(csvfile['complaint_description'])
         ward_name = list(csvfile['ward_name'])
         ward_list = list(set(ward_name))
-
-        print(complaint_description)
 
         date_created = []
 

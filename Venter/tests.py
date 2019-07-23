@@ -6,13 +6,15 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import Permission, User
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError
 from django.test import RequestFactory, TestCase, override_settings
 from django.test.client import Client
 from django.urls import reverse
 
 from Backend.settings import ADMINS, BASE_DIR, MEDIA_ROOT
 from Venter.forms import ContactForm, CSVForm, ExcelForm, ProfileForm, UserForm
-from Venter.models import Category, File, Header, Organisation, Profile
+from Venter.models import (Category, Domain, File, Header, Keyword,
+                           Organisation, Profile, Proposal)
 from Venter.views import CategoryListView
 from Venter.wordcloud import generate_wordcloud
 
@@ -276,7 +278,7 @@ class WordCloudTestCase(TestCase):
         wordcloud_category_list = []
 
         dict_data = json.load(file.output_file_json)
-        print("=====================dict_data in test case: ", type(dict_data) )
+        print("=====================dict_data in test case: ", type(dict_data))
         print(dict_data)
         domain_data = dict_data[domain_name]
         print("=====================domain_data in test case: ", type(domain_data))
@@ -501,6 +503,50 @@ class UpdateProfileTestCase(TestCase):
         self.assertTemplateUsed(response, './Venter/update_profile.html')
         self.assertFormError(response, "profile_form", "phone_number", "Please enter a valid phone number")
 
+    def test_non_image_profile_picture(self):
+        self.client.login(username='user.civis', password='useruser')
+        user_civis = User.objects.get(username='user.civis')
+
+        data = open('media/Test_Files/input/demoicmc.csv', 'rb')
+        file_to_upload = SimpleUploadedFile(data.name, data.read())
+        data = {
+            'profile_picture': file_to_upload
+        }
+        response = self.client.post(reverse('update_profile', args=[user_civis.pk]), data, enctype='multipart/form-data')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['successful_submit'], False)
+        self.assertTemplateUsed(response, './Venter/update_profile.html')
+        self.assertFormError(response, "profile_form", "profile_picture", "File extension 'csv' is not allowed. Allowed extensions are: 'png, jpg, jpeg'.")
+
+    def test_max_size_profile_picture(self):
+        self.client.login(username='user.civis', password='useruser')
+        user_civis = User.objects.get(username='user.civis')
+
+        data = open('media/Test_Files/input/invalid_size_profile_picture.jpg', 'rb')
+        file_to_upload = SimpleUploadedFile(data.name, data.read())
+        data = {
+            'profile_picture': file_to_upload
+        }
+        response = self.client.post(reverse('update_profile', args=[user_civis.pk]), data, enctype='multipart/form-data')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['successful_submit'], False)
+        self.assertTemplateUsed(response, './Venter/update_profile.html')
+        self.assertFormError(response, "profile_form", "profile_picture", "Profile picture size must not exceed 1 MB")
+
+    def test_valid_profile_picture(self):
+        self.client.login(username='user.civis', password='useruser')
+        user_civis = User.objects.get(username='user.civis')
+
+        data = open('media/Test_Files/input/valid_size_profile_picture.jpg', 'rb')
+        file_to_upload = SimpleUploadedFile(data.name, data.read())
+        data = {
+            'profile_picture': file_to_upload
+        }
+        response = self.client.post(reverse('update_profile', args=[user_civis.pk]), data, enctype='multipart/form-data')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['successful_submit'], True)
+        self.assertTemplateUsed(response, './Venter/update_profile.html')
+
 @override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
 class RegisterEmployeeTestCase(TestCase):
     def setUp(self):
@@ -654,7 +700,7 @@ class ContactUsTestCase(TestCase):
             'first_name': 'Test',
             'last_name': 'User',
             'designation': 'CEO',
-            'city': 'Mumbai',
+            'city': 'Test',
             'company_name': 'Company',
             'email_address': 'user@company',
             'contact_no': '9876543210',
@@ -674,7 +720,7 @@ class ContactUsTestCase(TestCase):
             'last_name': 'User',
             'company_name': 'Company',
             'designation': 'CEO',
-            'city': 'Mumbai',
+            'city': 'Test',
             'email_address': 'user@company.com',
             'contact_no': '1234567890',
             'detail_1': 'Test',
@@ -686,6 +732,44 @@ class ContactUsTestCase(TestCase):
         self.assertEqual(response.context['successful_submit'], False)
         self.assertTemplateUsed(response, './Venter/contact_us.html')
         self.assertFormError(response, "contact_form", "contact_no", "Please enter a valid phone number")
+
+    def test_invalid_company_contact_us(self):
+        data = {
+            'first_name': 'Test',
+            'last_name': 'User',
+            'company_name': 'Company &(*^',
+            'designation': 'CEO',
+            'city': 'Test',
+            'email_address': 'user@company.com',
+            'contact_no': '1234567890',
+            'detail_1': 'Test',
+            'detail_2': 'Test',
+            'detail_3': 'Test'
+        }
+        response = self.client.post(reverse('contact_us'), data, enctype='multipart/form-data')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['successful_submit'], False)
+        self.assertTemplateUsed(response, './Venter/contact_us.html')
+        self.assertFormError(response, "contact_form", "company_name", "Please enter a valid company name")
+
+    def test_invalid_designation_contact_us(self):
+        data = {
+            'first_name': 'Test',
+            'last_name': 'User',
+            'company_name': 'Company 123',
+            'designation': '123',
+            'city': 'Test',
+            'email_address': 'user@company.com',
+            'contact_no': '1234567890',
+            'detail_1': 'Test',
+            'detail_2': 'Test',
+            'detail_3': 'Test'
+        }
+        response = self.client.post(reverse('contact_us'), data, enctype='multipart/form-data')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['successful_submit'], False)
+        self.assertTemplateUsed(response, './Venter/contact_us.html')
+        self.assertFormError(response, "contact_form", "designation", "Please enter a valid designation")
 
     def test_invalid_city_contact_us(self):
         data = {
@@ -718,7 +802,6 @@ class ContactUsTestCase(TestCase):
             'contact_no': '9876543210',
             'detail_1': 'Test',
             'detail_2': 'Test',
-            'detail_3': 'Test'
         }
         response = self.client.post(reverse('contact_us'), data, enctype='multipart/form-data')
         self.assertEqual(response.status_code, 200)
@@ -885,4 +968,153 @@ class AboutUsTestCase(TestCase):
     def test_get_about_us(self):
         response = self.client.get(reverse('about_us'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, './Venter/about_us.html') 
+        self.assertTemplateUsed(response, './Venter/about_us.html')
+
+
+@override_settings(STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage')
+class AddProposalTestCase(TestCase):
+    def setUp(self):
+        civis_org = Organisation.objects.create(organisation_name='CIVIS')
+        civis_admin = User.objects.create_superuser(username='test_admin', password='adminadmin', email='a@example.com')
+        Profile.objects.create(user=civis_admin, organisation_name=civis_org)
+
+    def test_get_add_proposal(self):
+        self.client.login(username='test_admin', password='adminadmin')
+        response = self.client.get(reverse('add_proposal'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['one_save_operation'], False)
+        self.assertTemplateUsed(response, './Venter/add_proposal.html')
+
+    def test_post_invalid_proposal_name(self):
+        self.client.login(username='test_admin', password="adminadmin")
+        response = self.client.get(reverse('add_proposal'))
+        self.assertEqual(response.status_code, 200)
+
+        keyword_list = json.dumps("{'a', 'b', 'c'}")
+
+        invalid_data = {
+            "proposal_name": 'xyz &()_21',
+            "domain_name": 'xyz',
+            "keyword_list": keyword_list,
+            "final_submit": True,
+            "one_save_operation": False,
+        }
+        response = self.client.post(reverse('add_proposal'), invalid_data, enctype='multipart/form-data')
+
+        self.assertEqual(response.context['one_save_operation'], False)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, './Venter/add_proposal.html')
+        self.assertFormError(response, "proposal_form", "proposal_name", "Proposal name may contain letters, digits, underscore and spaces only")
+
+    def test_post_existing_proposal(self):
+        self.client.login(username='test_admin', password="adminadmin")
+        response = self.client.get(reverse('add_proposal'))
+        self.assertEqual(response.status_code, 200)
+
+        proposal_obj = Proposal.objects.create(proposal_name='xyz_1')
+        proposal_obj.save()
+
+        keyword_list = json.dumps("{'a', 'b', 'c'}")
+
+        invalid_data = {
+            "proposal_name": 'xyz_1',
+            "domain_name": 'xyz',
+            "keyword_list": keyword_list,
+            "final_submit": True,
+            "one_save_operation": False,
+        }
+        response = self.client.post(reverse('add_proposal'), invalid_data, enctype='multipart/form-data')
+
+        # category_list = json.loads(keyword_list)
+        self.assertEqual(response.context['one_save_operation'], False)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, './Venter/add_proposal.html')
+        self.assertFormError(response, "proposal_form", "proposal_name", "Proposal with this Proposal name already exists.")
+
+    def test_post_existing_domain_name(self):
+        self.client.login(username='test_admin', password="adminadmin")
+        response = self.client.get(reverse('add_proposal'))
+        self.assertEqual(response.status_code, 200)
+
+        proposal_obj = Proposal.objects.create(proposal_name='lmn')
+        proposal_obj.save()
+        domain_obj = Domain.objects.create(proposal_name=proposal_obj, domain_name='xyz')
+        domain_obj.save()
+
+        keyword_list = json.dumps("{'a', 'b', 'c'}")
+
+        final_submit = "true"
+        
+        invalid_data = {
+            "proposal_name": 'lmn',
+            "domain_name": 'xyz',
+            "keyword_list": keyword_list,
+            "final_submit": final_submit,
+            "one_save_operation": True,
+        }
+        response = self.client.post(reverse('add_proposal'), invalid_data, enctype='multipart/form-data')
+
+        if final_submit == "true":
+            final_submit = True
+        elif final_submit == "false":
+            final_submit = False
+
+        try:
+            Domain.objects.create(proposal_name=proposal_obj, domain_name='xyz')
+        except IntegrityError as e:
+            self.assertEqual(response.context['one_save_operation'], True)
+            self.assertEqual(response.context['proposal_name'], 'lmn')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, './Venter/add_proposal.html')
+            self.assertFormError(response, "domain_form", "domain_name", "Domain for this Domain name already exists")
+
+    def test_post_valid_save_and_add_another_domain(self):
+        self.client.login(username='test_admin', password="adminadmin")
+        response = self.client.get(reverse('add_proposal'))
+        self.assertEqual(response.status_code, 200)
+
+        proposal_obj = Proposal.objects.create(proposal_name='lmn')
+        proposal_obj.save()
+
+        keyword_list = json.dumps("{'a', 'b', 'c'}")
+
+        invalid_data = {
+            "proposal_name": 'lmn',
+            "domain_name": 'xyz',
+            "keyword_list": keyword_list,
+            "final_submit": False,
+            "one_save_operation": True,
+        }
+        response = self.client.post(reverse('add_proposal'), invalid_data, enctype='multipart/form-data')
+
+        # category_list = json.loads(keyword_list)
+        self.assertEqual(response.context['final_submit'], False)
+        self.assertEqual(response.context['one_save_operation'], True)
+        self.assertEqual(response.context['proposal_name'], 'lmn')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, './Venter/add_proposal.html')
+
+    def test_post_valid_save_proposal(self):
+        self.client.login(username='test_admin', password="adminadmin")
+        response = self.client.get(reverse('add_proposal'))
+        self.assertEqual(response.status_code, 200)
+
+        proposal_obj = Proposal.objects.create(proposal_name='lmn')
+        proposal_obj.save()
+
+        keyword_list = json.dumps("{'a', 'b', 'c'}")
+
+        invalid_data = {
+            "proposal_name": 'lmn',
+            "domain_name": 'xyz',
+            "keyword_list": keyword_list,
+            "final_submit": True,
+            "one_save_operation": True,
+        }
+        response = self.client.post(reverse('add_proposal'), invalid_data, enctype='multipart/form-data')
+
+        # category_list = json.loads(keyword_list)
+        self.assertEqual(response.context['final_submit'], True)
+        self.assertEqual(response.context['one_save_operation'], True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, './Venter/add_proposal.html')     

@@ -76,12 +76,33 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
+        }
     }
-}
+
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'venter_db',
+            'USER': 'venter_user',
+            'PASSWORD': 'AdminAdmin@1',
+            'HOST': 'localhost',
+            'PORT': '',
+        }
+    }
+    MEDIA_ROOT = 'media'
+
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default = config('DATABASE_URL')
+#     )
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -116,10 +137,10 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
-# MEDIA_URL = '/media/'
-MEDIA_URL = '/MEDIA/'
+MEDIA_URL = '/'
+# MEDIA_URL = '/MEDIA/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "MEDIA")
+
 
 LOGIN_REDIRECT_URL = 'upload_file'
 LOGIN_URL = 'login'
@@ -138,10 +159,13 @@ EMAIL_PORT = 587
 
 # Maximum size of file uploaded by user
 # 5242880 = 5 MB
+# 2621440 = 2.5 MB
+# 1048576 = 1 MB
 
 ADMINS = [('Venter Admin', 'venterproject@gmail.com')]
 
 MAX_UPLOAD_SIZE = "5242880"
+MAX_PROFILE_PICTURE_UPLOAD_SIZE = "1048576"
 
 FILE_UPLOAD_TYPE = 'csv'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
