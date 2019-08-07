@@ -1,0 +1,10 @@
+.vscode/
+.idea/*
+__pycache__/
+db.sqlite3
+media/**
+htmlcov/
+stats.txt
+venv/
+staticfiles/*
+# Venter\ML_model\sentence_model\MAX.bin
