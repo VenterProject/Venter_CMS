@@ -211,7 +211,10 @@ h1 .subtitle {
 body,
 .wrapper {
     min-height: 100vh;
+<<<<<<< HEAD
     position: relative;
+=======
+>>>>>>> a54ad7373e11a53e075b4a4f296397bcbda854c3
 }
 
 a {
