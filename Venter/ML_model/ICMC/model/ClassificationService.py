@@ -6,7 +6,6 @@ from django.conf import settings
 
 from .ImportGraph import ImportGraph
 
-
 class ClassificationService:
     def __init__(self):
 
@@ -16,10 +15,7 @@ class ClassificationService:
         self.index_complaint_title_map = {}
 
         for i in range(len(complaints)):
-            line = complaints['Subcategory-English'][i]
-
-            if isinstance(line, float):
-                line = complaints['Subcategory-Marathi'][i]
+            line = complaints['cat_list'][i]
 
             line = line.strip('\'').replace("/", " ").replace("(", " ").replace(")", " ")
             self.index_complaint_title_map[i] = line

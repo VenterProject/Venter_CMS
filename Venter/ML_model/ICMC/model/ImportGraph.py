@@ -6,7 +6,6 @@ from django.conf import settings
 from nltk.tokenize import TweetTokenizer
 from numpy import linalg as la
 
-
 class ImportGraph:
     instance = None
 
@@ -34,16 +33,16 @@ class ImportGraph:
             train_we = True
 
             #encode dos 2 unix for the pre-trained word embedding for cross-platform functionality
-            # Dos2Unix.unixencode()
+            Dos2Unix.unixencode()
 
             with open(settings.BASE_DIR + str(
-                    "/Venter/ML_model/ICMC/dataset/dataset_mcgm_clean/word_index_map_mcgm_.pickle"), "rb") as myFile:
+                    "/Venter/ML_model/ICMC/dataset/dataset_mcgm_clean/word_index_map_icmc_.pickle"), "rb") as myFile:
                 self.word_index_map = pickle.load(myFile, encoding='latin1')
 
             if not initialize_random:
 
                 # load pre-trained word embedding.
-                with open(settings.BASE_DIR + "/Venter/ML_model/ICMC/dataset/dataset_mcgm_clean/word_vectors_mcgm_.pickle",
+                with open(settings.BASE_DIR + "/Venter/ML_model/ICMC/dataset/dataset_mcgm_clean/word_vectors_icmc_.pickle",
                           "rb") as myFile:
                     word_vectors = pickle.load(myFile, encoding='latin1')
 
@@ -52,15 +51,15 @@ class ImportGraph:
                 for i in range(len(word_vectors) - 1):
                     word_vectors[i] /= (la.norm((word_vectors[i])))
 
-            vocab_size = len(word_vectors)
+            vocab_size = 10093
             embedding_dim = 300
             # learning_rate = 1e-3
             # decay_factor = 0.99
             self.max_padded_sentence_length = 35
             # batch_size = 100
-            # iterations = 200
+            # iterations = 200 
             # highest_val_acc = 0
-            self.last_index = len(word_vectors) - 1
+            self.last_index = 10092
 
             def init_weight(shape, name):
                 initial = tf.truncated_normal(shape, stddev=0.1, name=name, dtype=tf.float32)
@@ -135,16 +134,16 @@ class ImportGraph:
                     yield X[indices], Y[indices]
 
             input_layer_size = embedding_dim
-            output_layer_size = 165
+            output_layer_size = 42
 
             # Hidden layer of size 1024
-            no_of_nurons_h1 = 512
+            no_of_nurons_h1 = 1024
             W = init_weight([input_layer_size, no_of_nurons_h1], 'W')
             b = init_bias([no_of_nurons_h1], 'b')
             y = tf.nn.relu(tf.matmul(sentence_embedding, W) + b)
 
             # Hidden layer of size 1024
-            no_of_nurons_h2 = 512
+            no_of_nurons_h2 = 1024
             W1 = init_weight([no_of_nurons_h1, no_of_nurons_h2], 'W1')
             b1 = init_bias([no_of_nurons_h2], 'b1')
             y1 = tf.nn.relu(tf.matmul(y, W1) + b1)
