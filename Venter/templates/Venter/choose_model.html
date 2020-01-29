@@ -1,12 +1,13 @@
 {% extends 'Venter/base.html' %}
+{% load static %}
 {% block title %}Upload File{% endblock %}
 {% block content %}
 
 <!-- LINEARICONS -->
-<link rel="stylesheet" href="../../static/assets/fonts/linearicons/style.css">
-<script src="../../static/assets/js/jquery-3.3.1.min.js"></script>
-<script src="../../static/assets/js/main.js"></script>
-<link rel="stylesheet" href="../../static/assets/css/choose_model.css">
+<link rel="stylesheet" href="{% static 'assets/fonts/linearicons/style.css' %}">
+<script src="{% static 'assets/js/jquery-3.3.1.min.js' %}"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+<link rel="stylesheet" href="{% static 'assets/css/choose_model.css' %}">
 
 <script>
     let model_choice;
@@ -53,7 +54,7 @@
                 <div class="data title">Choose Model</div><br>
                     <div class="card-deck">
                         <div class="card" id="sentence_model_card">
-                            <img class="card-img-top" src="../../static/assets/img/sentence_model.png" alt="sentence model Card">
+                            <img class="card-img-top" src="{% static 'assets/img/sentence_model.png' %}" alt="sentence model Card">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-sm-9">
@@ -74,7 +75,7 @@
                             </div>
                         </div>
                         <div class="card" id="keyword_model_card">
-                            <img class="card-img-top" src="../../static/assets/img/keyword_model.png" alt="keyword model Card">
+                            <img class="card-img-top" src="{% static 'assets/img/keyword_model.png' %}" alt="keyword model Card">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-sm-9">

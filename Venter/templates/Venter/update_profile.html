@@ -21,11 +21,11 @@
         <form method="post" name="form" enctype="multipart/form-data" class="profile-form">
             {% csrf_token %}
             <div class="profile_picture_container">
-                <img src="/media/{{ request.user.profile.profile_picture.url }}" alt="Avatar" class="profile-avatar">
+                <img src="{{ request.user.profile.profile_picture.url }}" alt="Avatar" class="profile-avatar">
             </div>
             <br>
             <div class="wrap-field">
-                <label class="org-label">{{ request.user.username}}</label>
+                <label class="org-label">{{ request.user.username }}</label>
             </div>
             <div class="wrap-field">
                 <div class="center">
@@ -44,7 +44,7 @@
             <div class="wrap-field">
                 <div class="center">
                     <div class="label-data">Profile Picture:</div> &nbsp;
-                    <div class="field">{{ profile_form.profile_picture}}</div>
+                    <div class="field">{{ profile_form.profile_picture }}</div>
                 </div> 
             </div>
 

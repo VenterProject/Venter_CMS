@@ -5,9 +5,10 @@ db.sqlite3
 media/**
 htmlcov/
 stats.txt
-venv/
+venter/
 staticfiles/*
+static/*
 Venter/ML_model/sentence_model/MAX.bin
-Venter/ML_model/ICMC/dataset/dataset_mcgm_clean/word_vectors_mcgm.pickle
-Venter/ML_model/ICMC/dataset/dataset_mcgm_clean/word_vectors_mcgm_.picke
+Venter/ML_model/ICMC/dataset/dataset_mcgm_clean/word_vectors_icmc.pickle
+Venter/ML_model/ICMC/dataset/dataset_mcgm_clean/word_vectors_icmc_.picke
 

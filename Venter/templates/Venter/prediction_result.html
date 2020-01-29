@@ -1,13 +1,14 @@
 {% extends 'Venter/base.html' %}
+{% load static %}
 {% block title %}Prediction Results{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="../../static/assets/css/prediction_result.css">
+<link rel="stylesheet" href="{% static 'assets/css/prediction_result.css' %}">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js">
 <link src="https://code.jquery.com/jquery-3.2.1.js">
 <link src="https://code.jquery.com/jquery-3.2.1.min.js">
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript" src="../../static/assets/js/download.js"></script>
+<script type="text/javascript" src="{% static 'assets/js/download.js' %}"></script>
 
 <script>
   $(document).ready(function () {

@@ -1,12 +1,13 @@
 {% extends 'Venter/base.html' %}
+{% load static %}
 {% block title %}Registration{% endblock %}
 {% block content %}
 
 <!-- LINEARICONS -->
-<link rel="stylesheet" href="../../static/assets/fonts/linearicons/style.css">
-<script src="../../static/assets/js/jquery-3.3.1.min.js"></script>
-<script src="../../static/assets/js/main.js"></script>
-<link rel="stylesheet" href="../../static/assets/css/registration.css">
+<link rel="stylesheet" href="{% static 'assets/fonts/linearicons/style.css' %}">
+<script src="{% static 'assets/js/jquery-3.3.1.min.js' %}"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+<link rel="stylesheet" href="{% static 'assets/css/registration.css' %}">
 
 {% if user.is_staff %}
     {% if successful_submit %}
@@ -65,7 +66,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                         <div class="text-center">
-                            <img src="../../static/assets/img/tick_mark.png" alt="" class="tick_mark-register">
+                            <img src="{% static 'assets/img/tick_mark.png' %}" alt="" class="tick_mark-register">
                         </div>
                     </div>
                     <div class="modal-footer">

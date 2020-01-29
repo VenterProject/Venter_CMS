@@ -1,12 +1,13 @@
 {% extends 'Venter/index.html' %}
+{% load static %}
 {% block title %}Contact Us{% endblock %}
 {% block content %}
 
 <!-- LINEARICONS -->
-<link rel="stylesheet" href="../../static/assets/fonts/linearicons/style.css">
-<script src="../../static/assets/js/jquery-3.3.1.min.js"></script>
-<script src="../../static/assets/js/main.js"></script>
-<link rel="stylesheet" href="../../static/assets/css/contact_us.css">
+<link rel="stylesheet" href="{% static 'assets/fonts/linearicons/style.css' %}">
+<script src="{% static 'assets/js/jquery-3.3.1.min.js' %}"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+<link rel="stylesheet" href="{% static 'assets/css/contact_us.css' %}">
 
 {% if successful_submit %}
 <script type="text/javascript">
@@ -179,7 +180,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
                 <div class="text-center">
-                    <img src="../../static/assets/img/phone_logo.png" alt="" class="phone_logo-contact">
+                    <img src="{% static 'assets/img/phone_logo.png' %}" alt="" class="phone_logo-contact">
                 </div>
             </div>
             <div class="modal-footer">

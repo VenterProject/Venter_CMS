@@ -1,9 +1,10 @@
 {% extends 'Venter/base.html' %}
+{% load static %}
 {% block title %}Prediction Table {% endblock %}
 {% block content %}
  
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="../../static/assets/css/prediction_table.css">
+<link rel="stylesheet" href="{% static 'assets/css/prediction_table.css' %}">
 <script src="http://tablesorter.com/addons/pager/jquery.tablesorter.pager.js"></script>
 
 <!-- {% if filemeta.file_saved_status %}
@@ -389,7 +390,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
                 <div class="text-center">
-                    <img src="../../static/assets/img/file_logo.png" alt="" class="file_logo-table">
+                    <img src="{% static 'assets/img/file_logo.png' %}" alt="" class="file_logo-table">
                 </div>
             </div>
             <div class="modal-footer">

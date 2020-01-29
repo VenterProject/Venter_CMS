@@ -1,12 +1,13 @@
 {% extends 'Venter/index.html' %}
+{% load static %}
 {% block title %}About Us{% endblock %}
 {% block content %}
 
 <!-- LINEARICONS -->
-<link rel="stylesheet" href="../../static/assets/fonts/linearicons/style.css">
-<script src="../../static/assets/js/jquery-3.3.1.min.js"></script>
-<script src="../../static/assets/js/main.js"></script>
-<link rel="stylesheet" href="../../static/assets/css/about_us.css">
+<link rel="stylesheet" href="{% static 'assets/fonts/linearicons/style.css' %}">
+<script src="{% static 'assets/js/jquery-3.3.1.min.js' %}"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+<link rel="stylesheet" href="{% static 'assets/css/about_us.css' %}">
 
 <div class="outer-as">
     <div class="inner-as">
@@ -42,16 +43,16 @@
                 <div class="col-sm-3">
                     <div class="col-sm-5">
                         <div>
-                           <a href="https://civis.vote/"> <img src="../../static/assets/img/civis.jpg" class="civis_logo"> </a>
+                           <a href="https://civis.vote/"> <img src="{% static 'assets/img/civis.jpg' %}" class="civis_logo"> </a>
                         </div>   
                     </div>
                     <div class="col-sm-7">
                         <div>
-                            <img src="../../static/assets/img/civic_impact_1.png" class="civis_impact1">
+                            <img src="{% static 'assets/img/civic_impact_1.png' %}" class="civis_impact1">
                         </div>   
                         <br> 
                         <div>
-                            <img src="../../static/assets/img/civis_impact_2.png" class="civis_impact2">
+                            <img src="{% static 'assets/img/civis_impact_2.png' %}" class="civis_impact2">
                         </div>
                     </div>   
                 </div>    
@@ -72,16 +73,16 @@
                 <div class="col-sm-3">
                     <div class="col-sm-5">
                         <div>
-                            <a href="https://www.ichangemycity.com/"><img src="../../static/assets/img/icmc.jpg" class="icmc_logo"> </a>
+                            <a href="https://www.ichangemycity.com/"><img src="{% static 'assets/img/icmc.jpg' %}" class="icmc_logo"> </a>
                         </div>   
                     </div>  
                     <div class="col-sm-7">
                     <div>
-                            <img src="../../static/assets/img/icmc_impact_1.png" class="icmc_impact1">
+                            <img src="{% static 'assets/img/icmc_impact_1.png' %}" class="icmc_impact1">
                         </div>    
                         <br>
                         <div>
-                            <img src="../../static/assets/img/icmc_impact_2.png" class="icmc_impact2">
+                            <img src="{% static 'assets/img/icmc_impact_2.png' %}" class="icmc_impact2">
                         </div> 
                     </div>   
                 </div>     

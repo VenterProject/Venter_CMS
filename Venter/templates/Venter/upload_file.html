@@ -1,12 +1,13 @@
 {% extends 'Venter/base.html' %}
+{% load static %}
 {% block title %}Upload File {% endblock %}
 {% block content %}
 
 <!-- LINEARICONS -->
-<link rel="stylesheet" href="../../static/assets/fonts/linearicons/style.css">
-<script src="../../static/assets/js/jquery-3.3.1.min.js"></script>
-<script src="../../static/assets/js/main.js"></script>
-<link rel="stylesheet" href="../../static/assets/css/upload_file.css">
+<link rel="stylesheet" href="{% static 'assets/fonts/linearicons/style.css' %}">
+<script src="{% static 'assets/js/jquery-3.3.1.min.js' %}"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+<link rel="stylesheet" href="{% static 'assets/css/upload_file.css' %}">
 
 {% if successful_submit %}
 <script type="text/javascript">
@@ -91,7 +92,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                         <div class="text-center">
-                            <img src="../../static/assets/img/file_logo.png" alt="" class="file_logo-upload">
+                            <img src="{% static 'assets/img/file_logo.png' %}" alt="" class="file_logo-upload">
                         </div>
                     </div>
                     <div class="modal-footer">
