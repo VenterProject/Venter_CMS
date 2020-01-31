@@ -8,6 +8,7 @@ urlpatterns = [
     # ex: /venter/
     path('', TemplateView.as_view(template_name='Venter/home.html'), name='home'),
     # ex: /venter/home/
+    path('create_profile/', views.SignupEmployeeView.as_view(), name='create_profile'),
     path('home/', TemplateView.as_view(template_name='Venter/home.html'), name='home'),
     # ex: /venter/logout/
     path('logout/', auth.views.LogoutView.as_view(template_name="Venter/login.html"), name='logout'),
@@ -17,7 +18,8 @@ urlpatterns = [
     path('register_employee/', views.RegisterEmployeeView.as_view(), name='register_employee'),
     # ex: /venter/login/
     path('login/', auth.views.LoginView.as_view(template_name="Venter/login.html"), name='login'),
-    # ex: /venter/upload_file/
+    # ex: /venter/upload_file/     
+
     path('upload_file/', views.upload_file, name='upload_file'),
     # ex: /venter/choose_model/
     path('choose_model/', views.choose_model, name='choose_model'),

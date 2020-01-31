@@ -1,0 +1,116 @@
+
+    <head>
+        <!--Loads the path to your static files-->
+        {% load staticfiles %}
+        <meta charset="utf-8" />
+        <title>{% block title %}Registration{% endblock %}</title>
+        <link rel="apple-touch-icon" sizes="76x76" href="../../static/assets/img/apple-icon.png">
+        <link rel="icon" type="image/png" href="../../static/assets/img/favicon.ico">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
+            name='viewport' />
+        <!--     Fonts and icons     -->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
+        <!-- LINEARICONS -->
+        <link rel="stylesheet" href="../../static/assets/fonts/linearicons/style.css">
+        <!-- CSS Files -->
+        <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
+        <link href="../../static/assets/css/bootstrap.min.css" rel="stylesheet" />
+        <link href="../../static/assets/css/light-bootstrap-dashboard.css?v=2.0.1" rel="stylesheet" />
+    
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+    </head>
+    
+
+{% block content %}
+
+<link rel="stylesheet" href="../../static/assets/fonts/linearicons/style.css">
+<script src="../../static/assets/js/jquery-3.3.1.min.js"></script>
+<script src="../../static/assets/js/main.js"></script>
+<link rel="stylesheet" href="../../static/assets/css/registration.css">
+
+{% if successful_submit %}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#registerModal").modal('show');
+    });
+</script>
+{% endif %}
+
+    <div class="wrapper-register">
+        <div class="inner-register">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <h3 class="title">Employee Registration</h3>
+                <div class="form-holder">
+                    <span class="lnr lnr-user"></span>
+                    {{ user_form.username }}
+                </div>
+                <div class="form-holder">
+                    <span class="lnr lnr-lock"></span>
+                    {{ user_form.password }}
+                </div>
+                <div class="form-holder">
+                    <span class="lnr lnr-envelope"></span>
+                    {{ user_form.email }}
+                </div>
+                <div class="form-holder">
+                    <span class="lnr lnr-user"></span>
+                    {{ user_form.first_name }}
+                </div>
+                <div class="form-holder">
+                    <span class="lnr lnr-user"></span>
+                    {{ user_form.last_name }}
+                </div>
+                <div class="form-holder">
+                    <span class="lnr lnr-lock"></span>
+                    {{ user_form.organisation_name }}
+                </div>
+                <input type="submit" value="Register" class="submit-register">
+            </form>
+            {% if user_form.errors %}
+            {% for field in user_form %}
+            {% for error in field.errors %}
+            <br>
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+            {% endfor %}
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="modal fade" id="registerModal" tabindex="-1" role="dialog"
+            aria-labelledby="registerModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <div class="text-center">
+                            <img src="../../static/assets/img/tick_mark.png" alt="" class="tick_mark-register">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="footer-center">
+                            <p class="p1-register">Great!</p>
+                            <p class="p2-register">Registration successful.</p><br>
+                            <a href="{% url 'dashboard' %}">
+                                <button type="button" class="btn btn-warning rounded-4">
+                                    Go To Dashboard &nbsp;&nbsp; <span class="lnr lnr-arrow-right"></span>
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

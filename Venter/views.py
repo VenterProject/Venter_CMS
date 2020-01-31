@@ -27,8 +27,8 @@ from nltk import tokenize
 
 from Backend.settings import ADMINS, MEDIA_ROOT, STATIC_ROOT, BASE_DIR
 from Venter.forms import (ContactForm, CSVForm, DomainForm, SentenceModelForm,
-                          KeywordForm, ProfileForm, ProposalForm, UserForm, KeywordModelForm)
-from Venter.models import Category, Domain, File, Keyword, Profile, Proposal
+                          KeywordForm, ProfileForm, ProposalForm, UserForm, KeywordModelForm, UserCreationForm)
+from Venter.models import Category, Domain, File, Keyword, Profile, Proposal, UserProfile
 # from Venter import tasks
 from Venter.wordcloud import generate_keywords, generate_wordcloud
 
@@ -36,6 +36,93 @@ from .ML_model.ICMC.model.ClassificationService import ClassificationService
 from .ML_model.keyword_model.modeldriver import KeywordSimilarityMapping
 from .ML_model.sentence_model.modeldriver import SimilarityMapping
 
+# class CreateProfileView(CreateView):
+#     """
+#     Arguments------
+#         1) UpdateView: View to create the user profile details for a user
+#     """
+#     model = CreateProfile
+
+#     def post(self, request):
+#         profilecreate_form = ProfileCreateForm(request.POST)
+#         if profilecreate_form.is_valid():
+#             profilecreate_form.save()
+#             return render(request, './Venter/create_profile.html',
+#                           {'profilecreate_form': profilecreate_form, 'successful_submit': True})
+#         else:
+#             return render(request, './Venter/create_profile.html',
+#                           {'profilecreate_form': profilecreate_form, 'successful_submit': False})
+
+#     def get(self, request, *args, **kwargs):
+#         profilecreate_form = ProfileCreateForm(instance=request.user.profile)
+#         return render(request, './Venter/create_profile.html', {'profilecreate_form': profilecreate_form, 'successful_submit': False})
+
+class SignupEmployeeView(CreateView):
+    """
+    Arguments------
+        1) CreateView: View to register a new user(employee) of an organisation.
+        2) LoginRequiredMixin: Request to register employees by non-authenticated users,
+        will throw an HTTP 404 error
+    Note------
+        1) The organisation name for a newly registered employee is taken from
+           the profile information of the staff member registering the employee.
+        2) The profile.save() returns an instance of Profile that has been saved to the database.
+            This occurs only after the profile is created for a new user with the 'profile.user = user'
+        3) The validate_password() is an in-built password validator in Django
+            # module-django.contrib.auth.password_validation
+        Ref: https://docs.djangoproject.com/en/2.1/topics/auth/passwords/
+        4) The user_form instance is initialized again (user_form = UserForm()), for staff member
+            to register another employee after successful submission of previous form
+    """
+    model = User
+
+    def post(self, request, *args, **kwargs):
+        user_form = UserForm(request.POST)
+        if user_form.is_valid():
+            user_obj = user_form.save(commit=False)
+            password = user_form.cleaned_data.get('password')
+
+            try:    
+                validate_password(password, user_obj)
+                user_obj.set_password(password)
+                user_obj.save()
+                org_name = request.user.profile.organisation_name
+                # permission = Permission.objects.get(
+                #      name='Can view files uploaded by self')
+                # user_obj.user_permissions.add(permission)
+                profile = Profile.objects.create(
+                    user=user_obj, organisation_name=org_name)
+                profile.save()
+                user_form = UserForm()
+                return render(request, './Venter/reg2.html',
+                              {'user_form': user_form, 'successful_submit': True})
+            except ValidationError as e:
+                user_form.add_error('password', e)
+                return render(request, './Venter/reg2.html', {'user_form': user_form, 'successful_submit': False})
+        else:
+            return render(request, './Venter/reg2.html', {'user_form': user_form, 'successful_submit': False})
+
+    def get(self, request, *args, **kwargs):
+        user_form = UserForm()
+        return render(request, './Venter/reg2.html', {'user_form': user_form, 'successful_submit': False})
+
+
+##old one
+
+# def register(request):
+#     if request.method =='POST':
+#         form = RegistrationForm(request.POST)
+#         if form.is_valid():
+#             profile = UserProfile.objects.create()
+#             profile.save()
+#             form.save()
+#             #return redirect(reverse('/'))
+#             return render(request, 'login.html')
+#     else:
+#         form = RegistrationForm()
+
+#         args = {'form': form}
+#         return render(request, 'Venter/create_profile.html', args)
 
 @login_required
 @never_cache
@@ -426,7 +513,7 @@ class AddProposalView(LoginRequiredMixin, CreateView):
 
             keyword_list = []
             keyword_list = generate_keywords(domain_paragraph_sentence_list)
-        
+        # wot dis
             keyword_dropdown = ["keyword one", "keyword two", "keyword three", "keyword four", "keyword five", "keyword six"]
             return render(request, './Venter/proposal_keyword_data.html',
                             {'keyword_list': keyword_list, 'keyword_dropdown': keyword_dropdown})
@@ -674,7 +761,8 @@ def predict_result(request, pk):
                     temp.append('Sub category ' + str(index+1))
                     index += 1
         elif model_choice == 'keyword_model':
-            temp.append('No. of Responses')            
+            temp.append('No. of Responses')     
+           
         temp.append({'role': 'style'})
         domain_stats = []
         domain_stats.append(temp)

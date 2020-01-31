@@ -21,7 +21,7 @@
         <form method="post" name="form" enctype="multipart/form-data" class="profile-form">
             {% csrf_token %}
             <div class="profile_picture_container">
-                <img src="/media/{{ request.user.profile.profile_picture.url }}" alt="Avatar" class="profile-avatar">
+                <img src="{{ request.user.profile.profile_picture.url }}" alt="Avatar" class="profile-avatar">
             </div>
             <br>
             <div class="wrap-field">

@@ -22,5 +22,7 @@ def get_user_profile_picture_path(instance, filename):
     Returns a custom MEDIA path for profile picture uploaded by user
     Eg: /media/User Profile Picture/xyz/user1/image2.png
     """
+    # return os.path.join(
+    #     f'User Profile Picture{instance.organisation_name}/{instance.user.username}/{filename}')
     return os.path.join(
-        f'User Profile Picture/{instance.organisation_name}/{instance.user.username}/{filename}')
+         f'User Profile Picture/{instance.organisation_name}/{instance.user.username}/{filename}')

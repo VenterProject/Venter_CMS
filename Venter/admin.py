@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from Venter.models import Category, File, Header, Organisation, Profile, Proposal, Domain, Keyword
+from Venter.models import Category, File, Header, Organisation, Profile, Proposal, Domain, Keyword, UserProfile
 
 
 class HeaderAdmin(admin.ModelAdmin):
@@ -35,7 +35,19 @@ class KeywordAdmin(admin.ModelAdmin):
     list_display = ('domain_name', 'keyword')
     list_filter = ['domain_name']
     verbose_name_plural = 'Keywords'
+    
+class UserProfileAdmin(admin.ModelAdmin):
 
+    def user_info(self, obj):
+        return obj.description
+
+    def get_queryset(self, request):
+        queryset = super(UserProfileAdmin, self).get_queryset(request)
+        return queryset
+
+    user_info.short_description = 'Info'
+
+admin.site.register(UserProfile, UserProfileAdmin)
 
 admin.site.register(Header, HeaderAdmin)
 admin.site.register(Category, CategoryAdmin)

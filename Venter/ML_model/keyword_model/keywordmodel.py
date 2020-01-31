@@ -166,7 +166,6 @@ def categorizer(keywords):
                 results[domain][categories[min_sim_index]].append(temp)
         print('Completed.\n')
         
-
         #sorting domain wise categorised responses based on scores
         for domain in results:
             for category in results[domain]:                                                                                                                                 

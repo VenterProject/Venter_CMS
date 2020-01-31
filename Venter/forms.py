@@ -5,7 +5,7 @@ from django.core.validators import (EmailValidator, FileExtensionValidator,
                                     RegexValidator)
 
 from Backend import settings
-from Venter.models import Domain, File, Keyword, Profile, Proposal
+from Venter.models import Domain, File, Keyword, Profile, Proposal, UserProfile
 
 from .validate import input_file_header_validation
 
@@ -168,7 +168,47 @@ class UserForm(forms.ModelForm):
         attrs={'class': 'form-control', 'placeholder': 'First Name'}))
     last_name = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Last Name'}))
+    # organisation_name = forms.CharField(widget=forms.TextInput(
+    #     attrs={'class': 'form-control', 'placeholder': 'Organization'}))
 
+ORGANIZATION_CHOICES = [
+    ('Civis', 'CIVIS'),
+    ('ICMC', 'ICMC'),
+    ]
+
+
+class UserCreationForm(forms.ModelForm):
+    """
+    Modelform, generated from Django's user model.
+
+    Note------
+        CSS styling done per widget instance
+
+    Usage------
+        1) 'registration.html' template: Generates the user form fields in the signup page for new users
+        2) 'update_profile.html' template: Generates the user form fields in the update profile page for existing users
+    """
+    class Meta:
+        """
+        Meta class------
+            1) declares 'User' as the model class to generate the 'user_form'
+            2) includes only five fields in the 'user_form' from the User model
+        """
+        model = Profile
+        fields = ('username', 'password', 'email', 'first_name', 'last_name', 'organisation_name')
+    username = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Username', 'autofocus': 'autofocus'}))
+    password = forms.CharField(widget=forms.PasswordInput(
+        attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    email = forms.CharField(widget=forms.EmailInput(
+        attrs={'class': 'form-control', 'placeholder': 'Email'}))
+    first_name = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'First Name'}))
+    last_name = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Last Name'}))
+    #organisation_name = forms.CharField(label='Which organization do you belong to', widget=forms.Select(choices=ORGANIZATION_CHOICES))
+    org_name = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Organization'}))
 
 class ProfileForm(forms.ModelForm):
     """
@@ -212,6 +252,82 @@ class ProfileForm(forms.ModelForm):
             os.remove(image_path)
         profile_instance = super(ProfileForm, self).save(*args, **kwargs)
         return profile_instance
+
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+
+# ORGANIZATION_CHOICES = [
+#     ('Civis', 'CIVIS'),
+#     ('ICMC', 'ICMC'),
+#     ]
+
+# class RegistrationForm():
+#     email = forms.EmailField(required=True)
+
+#     class Meta:
+#         model = UserProfile
+#         fields = ('user_name', 'organisation_name', 'phone_number', 'profile_picture')
+#     user_name = forms.CharField(label='Select a username')
+#     organisation_name = forms.CharField(label='Which organization do you belong to', widget=forms.Select(choices=ORGANIZATION_CHOICES))
+#     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+#     profile_picture = forms.FileField(
+#         widget=forms.FileInput(),
+#         required=False,
+#         validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg', 'jpeg'])],)
+
+#     def clean_profile_picture(self):
+#         uploaded_profile_picture = self.cleaned_data.get('profile_picture')
+#         if uploaded_profile_picture.size < int(settings.MAX_PROFILE_PICTURE_UPLOAD_SIZE):
+#             return uploaded_profile_picture
+#         else:
+#             raise forms.ValidationError(
+#                 "Profile picture size must not exceed 1 MB")
+#         return uploaded_profile_picture
+
+
+# class ProfileCreateForm(forms.ModelForm):
+#     """
+#     Modelform, generated from Django's Profile model.
+
+#     Usage------
+#         1) 'registration.html' template: Generates the profile form fields in the signup page for new users
+#         2) 'update_profile.html' template: Generates the profile form fields in the update profile page
+#         for existing users
+#     """
+#     class Meta:
+#         """
+#         Meta class------
+#             1) declares 'CreateProfile' as the model class to generate the 'profile_form'
+#             2) includes only three fields in the 'profile_form' from the Profile model
+#         """
+    #     model = CreateProfile
+    #     fields = ('user_name', 'organisation_name', 'phone_number', 'profile_picture')
+    # user_name = forms.CharField(label='Select a username')
+    # organisation_name = forms.CharField(label='Which organization do you belong to', widget=forms.Select(choices=ORGANIZATION_CHOICES))
+    
+    # profile_picture = forms.FileField(
+    #     widget=forms.FileInput(),
+    #     required=False,
+    #     validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg', 'jpeg'])],)
+
+    # def clean_profile_picture(self):
+    #     uploaded_profile_picture = self.cleaned_data.get('profile_picture')
+    #     if uploaded_profile_picture.size < int(settings.MAX_PROFILE_PICTURE_UPLOAD_SIZE):
+    #         return uploaded_profile_picture
+    #     else:
+    #         raise forms.ValidationError(
+    #             "Profile picture size must not exceed 1 MB")
+    #     return uploaded_profile_picture
+
+#     # def save(self, *args, **kwargs):
+#     #     """
+#     #     Update the primary profile picture on the related User object as well.
+#     #     """
+#     #     user_instance = self.instance.user
+#     #     image_path = user_instance.profile.profile_picture.name
+#     #     if os.path.isfile(image_path):
+#     #         os.remove(image_path)
+#     #     profile_instance = super(ProfileCreateForm, self).save(*args, **kwargs)
+#     #     return profile_instance
 
 
 class ContactForm(forms.Form):

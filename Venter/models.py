@@ -59,8 +59,8 @@ class Profile(models.Model):
         upload_to=get_user_profile_picture_path,
         null=True,
         blank=True,
-        default='default-avatar.png'
     )
+
     phone_number = models.CharField(
         blank=True,
         max_length=10,
@@ -70,6 +70,70 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username  # pylint: disable = E1101
 
+# class CreateProfile(models.Model):
+
+#     user_name = models.CharField(
+#         max_length=30
+#     )
+#     organisation_name = models.CharField(
+#         max_length=30,
+#         null=True
+#     )
+#     profile_picture = models.ImageField(
+#         upload_to=get_user_profile_picture_path,
+#         null=True,
+#         blank=True,
+#         default='default-avatar.png'
+#     )
+#     phone_number = models.CharField(
+#         blank=True,
+#         max_length=10,
+#         validators=[RegexValidator(
+#             regex=r'^[6-9]\d{9}$', message='Please enter a valid phone number')]
+#     )
+#     def __str__(self):
+#         return self.user.username  # pylint: disable = E1101
+
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+
+class UserProfileManager(models.Manager):
+    def get_queryset(self):
+        return super(UserProfileManager, self).get_queryset()
+
+class UserProfile(models.Model):
+    
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
+    organisation_name = models.ForeignKey(
+        Organisation,
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    profile_picture = models.ImageField(
+        upload_to=get_user_profile_picture_path,
+        null=True,
+        blank=True,
+    )
+
+    phone_number = models.CharField(
+        blank=True,
+        max_length=10,
+        validators=[RegexValidator(
+            regex=r'^[6-9]\d{9}$', message='Please enter a valid phone number')]
+    )
+    london = UserProfileManager()
+    objects = models.Manager()
+    def __str__(self):
+        return self.user.username
+
+def create_profile(sender, **kwargs):
+    if kwargs['created']:
+        user_profile = UserProfile.objects.create(user=kwargs['instance'])
+
+post_save.connect(create_profile, sender=User)
 
 class Header(models.Model):
     """
