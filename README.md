@@ -32,14 +32,21 @@ Response list for a particular category to be represented in the form of stacked
 Interactive multi-variety chart editor to visualize category and response relationship of a particular domain that is printable. 
 Implementation of word cloud component that displays a cloud of top 20-30 important keywords belonging to a group of responses per category per domain.
 
-### Technology Stack
-| Domain | Tool/Framework |
-| --- | --- |
-| Web Framework		|	  Django |
-| Backend	|			  Python |
-| Frontend |				  HTML, CSS, JavaScript, JQuery, Bootstrap |
-| Database (Development phase) |	  SQLite |
-| Database (Production phase) |	  PostgreSQL |
-| Cloud-hosting platform |		  Microsoft Azure |
-| DevOps	|			  Git |
-| IDE |	Visual Studio Code |
+### Tech Stack
+| Technology                      | Tools  |
+| --------                        | -----  |
+| Web Framework			              | Django |
+| Backend				                  | Python |
+| Frontend				                | HTML, CSS, JavaScript, JQuery, Bootstrap |
+| Database (Development phase)	  | SQLite |
+| Database (Production phase)	    | PostgreSQL |
+| Cloud-hosting platform		      | Microsoft Azure, Google Cloud Platform |
+| DevOps				                  | Git |
+| IDE					                    | Visual Studio Code, Sublime Text 3 |
+
+### Clients:
+* Civis
+* ICMyC
+* SpeakUp
+
+### Contact Us at: venterproject@gmail.com
