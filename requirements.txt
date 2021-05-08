@@ -39,7 +39,7 @@ djangorestframework==3.8.2
 dnspython==1.15.0
 docutils==0.14
 echo==0.1
-eventlet==0.23.0
+eventlet==0.31.0
 ez-setup==0.9
 falcon==1.4.1
 feedparser==5.2.1
